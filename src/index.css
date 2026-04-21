@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Clean medical brand design system. All colors HSL. */
+@layer base {
+  :root {
+    /* Pure white / deep green medical theme */
+    --background: 0 0% 100%;
+    --foreground: 160 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 30% 12%;
+
+    /* Brand: clinical green */
+    --primary: 158 64% 32%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 158 45% 96%;
+    --primary-hover: 158 64% 26%;
+
+    /* Supporting accent: soft mint */
+    --accent: 158 45% 96%;
+    --accent-foreground: 158 64% 28%;
+
+    --secondary: 160 15% 96%;
+    --secondary-foreground: 160 30% 18%;
+
+    --muted: 160 10% 96%;
+    --muted-foreground: 160 10% 42%;
+
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 160 15% 90%;
+    --input: 160 15% 90%;
+    --ring: 158 64% 32%;
+
+    --radius: 0.75rem;
+
+    --gradient-soft: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(158 45% 98%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 32%) 0%, hsl(158 64% 26%) 100%);
+
+    --shadow-xs: 0 1px 2px hsl(160 30% 12% / 0.04);
+    --shadow-sm: 0 1px 3px hsl(160 30% 12% / 0.06), 0 1px 2px hsl(160 30% 12% / 0.04);
+    --shadow-md: 0 4px 6px -1px hsl(160 30% 12% / 0.06), 0 2px 4px -2px hsl(160 30% 12% / 0.04);
+    --shadow-lg: 0 10px 15px -3px hsl(160 30% 12% / 0.06), 0 4px 6px -4px hsl(160 30% 12% / 0.04);
+    --shadow-primary: 0 4px 12px -2px hsl(158 64% 32% / 0.25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Manrope', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, .font-serif {
+    font-family: 'PT Serif', Georgia, serif;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  .container-narrow {
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8;
+  }
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary;
+  }
+  .eyebrow::before {
+    content: "";
+    @apply inline-block h-px w-8 bg-primary/50;
+  }
+
+  /* Button primitives — clean, tactile, no gradients */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all duration-200;
+    @apply hover:bg-[hsl(var(--primary-hover))] hover:shadow-[var(--shadow-primary)] active:scale-[0.98];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-white px-6 py-3 text-sm font-semibold text-foreground transition-all duration-200;
+    @apply hover:border-primary hover:text-primary hover:bg-primary-soft active:scale-[0.98];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold text-foreground transition-colors;
+    @apply hover:bg-muted active:scale-[0.98];
+  }
+}
