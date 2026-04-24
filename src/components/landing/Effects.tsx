@@ -46,7 +46,7 @@ export const Effects = () => (
           <div>
             <h3 className="font-serif text-xl sm:text-2xl">Антиоксидант №1</h3>
             <p className="mt-1 text-sm text-primary-foreground/85 sm:text-base">
-              Активность в 10–25 раз выше, чем у витамина C
+              Активность до 25 раз выше, чем у витамина C
             </p>
           </div>
         </div>
