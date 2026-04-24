@@ -3,23 +3,23 @@ import jar20 from "@/assets/jar-20g.png";
 import jar30 from "@/assets/jar-30g.png";
 import { ArrowRight } from "lucide-react";
 
+type CatalogProps = { onOrder: (productId: string) => void };
+
 type Product = {
   id: string;
   img: string;
   title: string;
   subtitle: string;
+  duration: string;
   price: number;
   oldPrice?: number;
   badge?: string;
-  perGram?: string;
 };
 
-type CatalogProps = { onOrder: (productId: string) => void };
-
 const products: Product[] = [
-  { id: "10", img: jar10, title: "D-Quercetin 10 г", subtitle: "259 ₽ за грамм", price: 2590, oldPrice: 3200 },
-  { id: "20", img: jar20, title: "D-Quercetin 20 г", subtitle: "199,50 ₽ за грамм", price: 3990, oldPrice: 5160, badge: "Выгодно" },
-  { id: "30", img: jar30, title: "D-Quercetin 30 г", subtitle: "166,30 ₽ за грамм", price: 4990, oldPrice: 7740, badge: "Лучшая цена" },
+  { id: "10", img: jar10, title: "D-Quercetin 10 г", subtitle: "259 ₽ за грамм", duration: "Хватит на ~30 дней", price: 2590, oldPrice: 3200 },
+  { id: "20", img: jar20, title: "D-Quercetin 20 г", subtitle: "199,50 ₽ за грамм", duration: "Хватит на ~60 дней", price: 3990, oldPrice: 5160, badge: "Выгодно" },
+  { id: "30", img: jar30, title: "D-Quercetin 30 г", subtitle: "166,30 ₽ за грамм", duration: "Хватит на ~90 дней", price: 4990, oldPrice: 7740, badge: "Лучшая цена" },
 ];
 
 const fmt = (n: number) => n.toLocaleString("ru-RU") + " ₽";
@@ -61,6 +61,7 @@ export const Catalog = ({ onOrder }: CatalogProps) => (
             <div className="flex flex-1 flex-col p-5">
               <h3 className="font-serif text-lg leading-snug">{p.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{p.subtitle}</p>
+              <p className="mt-1.5 text-sm font-medium text-primary">{p.duration}</p>
               <div className="mt-4 flex items-baseline gap-3">
                 <span className="text-2xl font-bold text-foreground">{fmt(p.price)}</span>
                 {p.oldPrice && (

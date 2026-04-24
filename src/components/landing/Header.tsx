@@ -1,4 +1,4 @@
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 
 const links = [
@@ -33,6 +33,15 @@ export const Header = () => {
           ))}
         </nav>
 
+        <a
+          href="tel:89501144175"
+          className="hidden items-center gap-2 text-sm font-semibold text-foreground/80 transition-colors hover:text-primary md:flex"
+        >
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-soft">
+            <Phone className="h-4 w-4 text-primary" strokeWidth={2.5} />
+          </span>
+          8 (950) 114-41-75
+        </a>
         <a href="#order" className="btn-primary hidden md:inline-flex">
           Заказать
         </a>

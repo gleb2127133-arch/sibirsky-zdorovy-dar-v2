@@ -2,24 +2,71 @@ import { Star } from "lucide-react";
 
 const reviews = [
   {
-    name: "Ирина М., 58 лет",
+    name: "Ирина М.",
+    age: "58 лет",
     role: "Купила маме",
+    initials: "ИМ",
+    color: "bg-emerald-100 text-emerald-700",
     text: "Мама пьёт второй месяц. Давление держится ровнее, стала меньше жаловаться на головокружения. Заметили оба — и я, и она.",
     rating: 5,
   },
   {
-    name: "Андрей К., 45 лет",
+    name: "Андрей К.",
+    age: "45 лет",
     role: "После ковида",
+    initials: "АК",
+    color: "bg-blue-100 text-blue-700",
     text: "Долго не мог восстановиться — одышка, слабость. Через месяц приёма стало значительно легче дышать при нагрузке.",
     rating: 5,
   },
   {
-    name: "Светлана П., 39 лет",
+    name: "Светлана П.",
+    age: "39 лет",
     role: "ЗОЖ, бег",
+    initials: "СП",
+    color: "bg-violet-100 text-violet-700",
     text: "Принимаю как антиоксидант после длинных тренировок. Восстановление заметно быстрее, кожа выглядит свежее.",
     rating: 5,
   },
+  {
+    name: "Николай В.",
+    age: "62 года",
+    role: "Гипертония",
+    initials: "НВ",
+    color: "bg-amber-100 text-amber-700",
+    text: "Врач посоветовала попробовать в дополнение к основному лечению. Через три недели заметил, что голова стала яснее и давление чуть стабильнее. Буду продолжать.",
+    rating: 4,
+  },
+  {
+    name: "Марина Д.",
+    age: "44 года",
+    role: "Хроническая усталость",
+    initials: "МД",
+    color: "bg-rose-100 text-rose-700",
+    text: "Брала на пробу 10г — понравилось, что нет химии. Сейчас уже второй заказ на 30г. Стала высыпаться лучше и меньше болею в сезон простуд.",
+    rating: 5,
+  },
+  {
+    name: "Дмитрий Е.",
+    age: "51 год",
+    role: "Спорт и восстановление",
+    initials: "ДЕ",
+    color: "bg-teal-100 text-teal-700",
+    text: "Пью курсами уже год. Субъективно — меньше крепатуры после тренировок, сосуды чувствуют себя лучше. Анализы подтвердили улучшение липидного профиля.",
+    rating: 5,
+  },
 ];
+
+const StarRow = ({ rating }: { rating: number }) => (
+  <div className="flex gap-0.5">
+    {Array.from({ length: 5 }).map((_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${i < rating ? "fill-primary text-primary" : "fill-muted text-muted-foreground/30"}`}
+      />
+    ))}
+  </div>
+);
 
 export const Reviews = () => (
   <section className="bg-secondary/40 py-20 lg:py-28">
@@ -42,21 +89,22 @@ export const Reviews = () => (
         </div>
       </div>
 
-      <div className="mt-12 grid gap-5 lg:grid-cols-3">
+      <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {reviews.map((r) => (
           <article
             key={r.name}
             className="flex flex-col rounded-2xl border border-border bg-white p-7 transition-all hover:border-primary/30 hover:shadow-md"
           >
-            <div className="flex gap-0.5">
-              {Array.from({ length: r.rating }).map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-              ))}
-            </div>
+            <StarRow rating={r.rating} />
             <p className="mt-5 flex-1 leading-relaxed text-foreground/85">«{r.text}»</p>
-            <div className="mt-6 border-t border-border pt-5">
-              <div className="font-semibold">{r.name}</div>
-              <div className="text-sm text-muted-foreground">{r.role}</div>
+            <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-bold ${r.color}`}>
+                {r.initials}
+              </div>
+              <div>
+                <div className="font-semibold">{r.name}, {r.age}</div>
+                <div className="text-sm text-muted-foreground">{r.role}</div>
+              </div>
             </div>
           </article>
         ))}

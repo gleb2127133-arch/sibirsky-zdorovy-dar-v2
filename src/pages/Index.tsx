@@ -11,7 +11,7 @@ import { Catalog } from "@/components/landing/Catalog";
 import { FAQ } from "@/components/landing/FAQ";
 import { OrderForm } from "@/components/landing/OrderForm";
 import { Footer } from "@/components/landing/Footer";
-import { PineBranches } from "@/components/landing/PineBranches";
+import { FloatingCall } from "@/components/landing/FloatingCall";
 
 const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
@@ -25,8 +25,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <PineBranches />
-      <Header />
+<Header />
       <main>
         <Hero />
         <About />
@@ -40,6 +39,7 @@ const Index = () => {
         <OrderForm productId={selectedProduct} />
       </main>
       <Footer />
+      <FloatingCall />
     </div>
   );
 };

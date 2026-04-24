@@ -1,4 +1,5 @@
 import { ShieldCheck, FileCheck2, Factory, Award } from "lucide-react";
+import tempImg from "@/assets/hero-3jars.jpg";
 
 const items = [
   { icon: ShieldCheck, title: "ТР ТС 021/2011", text: "Регламент о безопасности пищевой продукции" },
@@ -9,18 +10,32 @@ const items = [
 
 export const Production = () => (
   <section className="bg-white py-20 lg:py-28">
-    <div className="container-narrow">
+    <div className="container-narrow grid gap-12 lg:grid-cols-2 lg:items-center lg:gap-16">
+
+      {/* Фото */}
+      <div className="overflow-hidden rounded-3xl border border-border shadow-sm">
+        <img
+          src={tempImg}
+          alt="Производство дигидрокверцетина"
+          width={1280}
+          height={960}
+          loading="lazy"
+          className="h-full w-full object-cover"
+        />
+      </div>
+
+      {/* Текст + сертификаты */}
       <div>
         <span className="eyebrow">Производство и качество</span>
         <h2 className="mt-5 font-serif text-3xl leading-tight sm:text-4xl lg:text-[2.75rem]">
           Российское сырьё.<br /> Сертифицировано в ЕАЭС.
         </h2>
-        <p className="mt-4 max-w-2xl text-muted-foreground">
+        <p className="mt-4 text-muted-foreground">
           Производим в Иркутской области из ядровой древесины сибирской лиственницы.
           Каждая партия проходит проверку на чистоту, тяжёлые металлы и микробиологию.
         </p>
 
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {items.map(({ icon: Icon, title, text }) => (
             <div
               key={title}
@@ -35,6 +50,7 @@ export const Production = () => (
           ))}
         </div>
       </div>
+
     </div>
   </section>
 );

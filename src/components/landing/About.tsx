@@ -1,4 +1,4 @@
-import jarsImg from "@/assets/jars-real.jpg";
+import jarsImg from "@/assets/about-product.jpg";
 
 export const About = () => (
   <section id="about" className="bg-white py-20 lg:py-28">
@@ -10,7 +10,7 @@ export const About = () => (
           width={1280}
           height={960}
           loading="lazy"
-          className="h-full w-full object-cover"
+          className="w-full object-cover"
         />
       </div>
 

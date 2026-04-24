@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Gift, Truck, Phone, ArrowRight, Check } from "lucide-react";
+import { Gift, Truck, Phone, ArrowRight, Check, ShieldCheck } from "lucide-react";
 
 const PRODUCTS = [
   { id: "10", label: "10 г", price: "2 590 ₽" },
@@ -223,7 +223,15 @@ export const OrderForm = ({ productId }: { productId?: string | null }) => {
               </>
             )}
           </button>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+
+          <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-primary-soft px-4 py-3">
+            <ShieldCheck className="h-5 w-5 shrink-0 text-primary" strokeWidth={2.2} />
+            <p className="text-sm font-medium text-primary">
+              Гарантия возврата 30 дней — если не подойдёт, вернём деньги
+            </p>
+          </div>
+
+          <p className="mt-3 text-center text-xs text-muted-foreground">
             Нажимая кнопку, вы соглашаетесь на обработку персональных данных
           </p>
         </form>
