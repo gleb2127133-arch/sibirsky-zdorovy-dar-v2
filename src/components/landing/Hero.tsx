@@ -1,5 +1,5 @@
 import { motion, type Variants } from "framer-motion";
-import jarImg from "@/assets/jars-real.jpg";
+import jarImg from "@/assets/hero-3jars.jpg";
 import { ArrowRight, Check, ShieldCheck } from "lucide-react";
 
 const container: Variants = {
@@ -101,7 +101,7 @@ export const Hero = () => {
           {/* Clean price badge */}
           <div className="absolute -bottom-4 -right-2 rounded-2xl border border-border bg-white px-5 py-4 shadow-md sm:-right-4">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Цена от</p>
-            <p className="font-serif text-2xl font-semibold text-foreground">1 490 ₽</p>
+            <p className="font-serif text-2xl font-semibold text-foreground">2 590 ₽</p>
           </div>
         </motion.div>
       </div>
