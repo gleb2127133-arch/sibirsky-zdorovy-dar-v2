@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 import type { IncomingMessage, ServerResponse } from "http";
 
 const PRODUCT_LABELS: Record<string, string> = {
@@ -53,6 +54,12 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
+    ViteImageOptimizer({
+      jpg: { quality: 82 },
+      jpeg: { quality: 82 },
+      png: { quality: 85 },
+      webp: { lossless: false, quality: 82 },
+    }),
     {
       name: "telegram-api",
       configureServer(server) {

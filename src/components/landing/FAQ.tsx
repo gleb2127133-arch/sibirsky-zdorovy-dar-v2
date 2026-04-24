@@ -36,7 +36,7 @@ export const FAQ = () => (
           Частые вопросы
         </h2>
         <p className="mt-4 text-muted-foreground">
-          Не нашли ответ? Напишите в чат или оставьте заявку — перезвоним за 5 минут.
+          Не нашли ответ? Напишите в чат или оставьте заявку — перезвоним за 15 минут.
         </p>
       </div>
       <Accordion type="single" collapsible className="w-full">
