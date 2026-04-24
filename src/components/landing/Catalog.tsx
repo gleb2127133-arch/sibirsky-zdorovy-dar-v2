@@ -14,6 +14,8 @@ type Product = {
   perGram?: string;
 };
 
+type CatalogProps = { onOrder: (productId: string) => void };
+
 const products: Product[] = [
   { id: "10", img: jar10, title: "D-Quercetin 10 г", subtitle: "259 ₽ за грамм", price: 2590, oldPrice: 3200 },
   { id: "20", img: jar20, title: "D-Quercetin 20 г", subtitle: "199,50 ₽ за грамм", price: 3990, oldPrice: 5160, badge: "Выгодно" },
@@ -22,7 +24,7 @@ const products: Product[] = [
 
 const fmt = (n: number) => n.toLocaleString("ru-RU") + " ₽";
 
-export const Catalog = () => (
+export const Catalog = ({ onOrder }: CatalogProps) => (
   <section id="catalog" className="bg-white py-20 lg:py-28">
     <div className="container-narrow">
       <div className="max-w-2xl">
@@ -65,10 +67,14 @@ export const Catalog = () => (
                   <span className="text-base text-muted-foreground line-through">{fmt(p.oldPrice)}</span>
                 )}
               </div>
-              <a href={`#order?p=${p.id}`} className="btn-primary mt-5 w-full">
+              <button
+                type="button"
+                onClick={() => onOrder(p.id)}
+                className="btn-primary mt-5 w-full"
+              >
                 Заказать
                 <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-              </a>
+              </button>
             </div>
           </article>
         ))}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { About } from "@/components/landing/About";
@@ -10,24 +11,37 @@ import { Catalog } from "@/components/landing/Catalog";
 import { FAQ } from "@/components/landing/FAQ";
 import { OrderForm } from "@/components/landing/OrderForm";
 import { Footer } from "@/components/landing/Footer";
+import { PineBranches } from "@/components/landing/PineBranches";
 
-const Index = () => (
-  <div className="min-h-screen bg-background">
-    <Header />
-    <main>
-      <Hero />
-      <About />
-      <Effects />
-      <Compare />
-      <Science />
-      <Production />
-      <Reviews />
-      <Catalog />
-      <FAQ />
-      <OrderForm />
-    </main>
-    <Footer />
-  </div>
-);
+const Index = () => {
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+
+  const handleOrder = (productId: string) => {
+    setSelectedProduct(productId);
+    setTimeout(() => {
+      document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <PineBranches />
+      <Header />
+      <main>
+        <Hero />
+        <About />
+        <Effects />
+        <Compare />
+        <Science />
+        <Production />
+        <Reviews />
+        <Catalog onOrder={handleOrder} />
+        <FAQ />
+        <OrderForm productId={selectedProduct} />
+      </main>
+      <Footer />
+    </div>
+  );
+};
 
 export default Index;

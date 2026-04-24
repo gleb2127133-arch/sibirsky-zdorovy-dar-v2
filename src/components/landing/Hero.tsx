@@ -50,8 +50,7 @@ export const Hero = () => {
             variants={item}
             className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
-            Природный биофлавоноид для поддержки сосудов, сердца и иммунитета.
-            Активность в 10–25 раз выше витамина C.
+            Природный антиоксидант №1 — поддержка сосудов, сердца и иммунитета. До 25 раз эффективнее витамина C.
           </motion.p>
 
           <motion.div

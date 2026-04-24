@@ -19,13 +19,13 @@ export const Footer = () => (
         <h3 className="font-serif text-base font-bold text-foreground">Контакты</h3>
         <ul className="mt-4 space-y-3 text-sm">
           <li>
-            <a href="tel:88000000000" className="flex items-center gap-2.5 text-foreground/80 transition-colors hover:text-primary">
-              <Phone className="h-4 w-4 text-primary" strokeWidth={2.2} /> 8 800 000-00-00
+            <a href="tel:89501144175" className="flex items-center gap-2.5 text-foreground/80 transition-colors hover:text-primary">
+              <Phone className="h-4 w-4 text-primary" strokeWidth={2.2} /> 8 (950) 114-41-75
             </a>
           </li>
           <li>
             <a href="#" className="flex items-center gap-2.5 text-foreground/80 transition-colors hover:text-primary">
-              <MessageCircle className="h-4 w-4 text-primary" strokeWidth={2.2} /> WhatsApp
+              <MessageCircle className="h-4 w-4 text-primary" strokeWidth={2.2} /> Макс
             </a>
           </li>
           <li>
