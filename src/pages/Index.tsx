@@ -15,9 +15,11 @@ import { FloatingCall } from "@/components/landing/FloatingCall";
 
 const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
 
-  const handleOrder = (productId: string) => {
+  const handleOrder = (productId: string, quantity: number) => {
     setSelectedProduct(productId);
+    setSelectedQuantity(quantity);
     setTimeout(() => {
       document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
     }, 50);
@@ -36,7 +38,7 @@ const Index = () => {
         <Reviews />
         <Catalog onOrder={handleOrder} />
         <FAQ />
-        <OrderForm productId={selectedProduct} />
+        <OrderForm productId={selectedProduct} quantity={selectedQuantity} />
       </main>
       <Footer />
       <FloatingCall />

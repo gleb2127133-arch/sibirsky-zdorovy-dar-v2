@@ -20,16 +20,20 @@ function buildTgMessage(d: {
   name: string;
   phone: string;
   product: string;
+  qty?: number;
   contact: string;
   comment?: string;
 }) {
   const now = new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
+  const qty = d.qty ?? 1;
+  const productLabel = PRODUCT_LABELS[d.product] ?? d.product;
   return [
     "🛒 <b>Новый заказ — Сибирский здоровый дар</b>",
     "",
     `👤 <b>Имя:</b> ${d.name}`,
     `📞 <b>Телефон:</b> ${d.phone}`,
-    `📦 <b>Товар:</b> ${PRODUCT_LABELS[d.product] ?? d.product}`,
+    `📦 <b>Товар:</b> ${productLabel}`,
+    qty > 1 ? `🔢 <b>Количество:</b> ${qty} шт.` : "",
     `💬 <b>Связь через:</b> ${CONTACT_LABELS[d.contact] ?? d.contact}`,
     d.comment ? `📝 <b>Комментарий:</b> ${d.comment}` : "",
     "",

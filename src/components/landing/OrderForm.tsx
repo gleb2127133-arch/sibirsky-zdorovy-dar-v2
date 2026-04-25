@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Gift, Truck, Phone, ArrowRight, Check, ShieldCheck } from "lucide-react";
+import { Gift, Truck, Phone, ArrowRight, Check, ShieldCheck, Minus, Plus } from "lucide-react";
 
 const PRODUCTS = [
-  { id: "10", label: "10 г", price: "2 590 ₽" },
-  { id: "20", label: "20 г", price: "3 990 ₽", badge: "Выгодно" },
-  { id: "30", label: "30 г", price: "4 990 ₽", badge: "Лучшая" },
+  { id: "10", label: "10 г", price: "2 590 ₽", amount: 2590 },
+  { id: "20", label: "20 г", price: "3 990 ₽", amount: 3990, badge: "Выгодно" },
+  { id: "30", label: "30 г", price: "4 990 ₽", amount: 4990, badge: "Лучшая" },
 ] as const;
 
 const CONTACTS = [
@@ -23,14 +23,23 @@ const schema = z.object({
   comment: z.string().trim().max(500).optional(),
 });
 
-export const OrderForm = ({ productId }: { productId?: string | null }) => {
+export const OrderForm = ({ productId, quantity: initialQty }: { productId?: string | null; quantity?: number }) => {
   const [product, setProduct] = useState(productId ?? "20");
+  const [qty, setQty] = useState(initialQty ?? 1);
   const [contact, setContact] = useState<ContactMethod>("phone");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (productId) setProduct(productId);
   }, [productId]);
+
+  useEffect(() => {
+    if (initialQty) setQty(initialQty);
+  }, [initialQty]);
+
+  const currentProduct = PRODUCTS.find((p) => p.id === product) ?? PRODUCTS[1];
+  const total = currentProduct.amount * qty;
+  const fmt = (n: number) => n.toLocaleString("ru-RU") + " ₽";
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -49,7 +58,7 @@ export const OrderForm = ({ productId }: { productId?: string | null }) => {
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, product, contact }),
+        body: JSON.stringify({ ...parsed.data, product, qty, contact }),
       });
       if (res.ok) {
         (e.target as HTMLFormElement).reset();
@@ -169,6 +178,36 @@ export const OrderForm = ({ productId }: { productId?: string | null }) => {
                 placeholder="+7 (___) ___-__-__"
                 className="w-full rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
+            </div>
+
+            {/* Количество */}
+            <div>
+              <p className="mb-2.5 text-sm font-medium">Количество банок</p>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 rounded-lg border border-input px-1 py-1">
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    disabled={qty === 1}
+                    className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
+                  >
+                    <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                  <span className="w-6 text-center text-base font-semibold">{qty}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQty((q) => Math.min(10, q + 1))}
+                    disabled={qty === 10}
+                    className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
+                  >
+                    <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  </button>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Итого:</p>
+                  <p className="text-lg font-bold text-foreground">{fmt(total)}</p>
+                </div>
+              </div>
             </div>
 
             {/* Contact method */}
