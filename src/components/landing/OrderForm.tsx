@@ -1,13 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Gift, Truck, Phone, ArrowRight, Check, ShieldCheck, Minus, Plus } from "lucide-react";
-
-const PRODUCTS = [
-  { id: "10", label: "10 г", price: "2 590 ₽", amount: 2590 },
-  { id: "20", label: "20 г", price: "3 990 ₽", amount: 3990, badge: "Выгодно" },
-  { id: "30", label: "30 г", price: "4 990 ₽", amount: 4990, badge: "Лучшая" },
-] as const;
+import { Gift, Truck, Phone, ArrowRight, ShieldCheck, ShoppingCart, X } from "lucide-react";
+import { type CartItem, PRODUCTS } from "@/components/landing/Catalog";
 
 const CONTACTS = [
   { value: "phone" as const, label: "Звонок" },
@@ -23,23 +18,24 @@ const schema = z.object({
   comment: z.string().trim().max(500).optional(),
 });
 
-export const OrderForm = ({ productId, quantity: initialQty }: { productId?: string | null; quantity?: number }) => {
-  const [product, setProduct] = useState(productId ?? "20");
-  const [qty, setQty] = useState(initialQty ?? 1);
+const fmt = (n: number) => n.toLocaleString("ru-RU") + " ₽";
+
+type Props = {
+  cart: CartItem[];
+  onRemoveFromCart: (id: string) => void;
+  onClearCart: () => void;
+};
+
+export const OrderForm = ({ cart, onRemoveFromCart, onClearCart }: Props) => {
   const [contact, setContact] = useState<ContactMethod>("phone");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (productId) setProduct(productId);
-  }, [productId]);
+  const cartTotal = cart.reduce((sum, item) => {
+    const p = PRODUCTS.find((p) => p.id === item.id);
+    return sum + (p ? p.price * item.qty : 0);
+  }, 0);
 
-  useEffect(() => {
-    if (initialQty) setQty(initialQty);
-  }, [initialQty]);
-
-  const currentProduct = PRODUCTS.find((p) => p.id === product) ?? PRODUCTS[1];
-  const total = currentProduct.amount * qty;
-  const fmt = (n: number) => n.toLocaleString("ru-RU") + " ₽";
+  const hasCart = cart.length > 0;
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,16 +49,21 @@ export const OrderForm = ({ productId, quantity: initialQty }: { productId?: str
       toast.error(parsed.error.issues[0]?.message ?? "Проверьте поля");
       return;
     }
+    if (!hasCart) {
+      toast.error("Добавьте хотя бы один товар в корзину");
+      return;
+    }
     setLoading(true);
     try {
       const res = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...parsed.data, product, qty, contact }),
+        body: JSON.stringify({ ...parsed.data, cart, contact }),
       });
       if (res.ok) {
         (e.target as HTMLFormElement).reset();
         setContact("phone");
+        onClearCart();
         toast.success("Заявка принята! Свяжемся с вами в течение 15 минут.");
       } else {
         toast.error("Ошибка отправки. Позвоните нам напрямую.");
@@ -90,7 +91,6 @@ export const OrderForm = ({ productId, quantity: initialQty }: { productId?: str
             Менеджер подтвердит заказ, уточнит детали и рассчитает доставку.
             Оплата удобным способом — картой, переводом или при получении.
           </p>
-
           <ul className="mt-8 space-y-4">
             {[
               { icon: Gift, t: "3 по цене 2", d: "При заказе трёх упаковок третья — в подарок" },
@@ -111,103 +111,70 @@ export const OrderForm = ({ productId, quantity: initialQty }: { productId?: str
         </div>
 
         {/* RIGHT — form */}
-        <form
-          onSubmit={onSubmit}
-          className="rounded-3xl bg-white p-7 text-foreground shadow-lg sm:p-9"
-        >
-          {/* Product selector */}
+        <form onSubmit={onSubmit} className="rounded-3xl bg-white p-7 text-foreground shadow-lg sm:p-9">
+
+          {/* Корзина или пустое состояние */}
           <div className="mb-5">
-            <p className="mb-2.5 text-sm font-medium">Выберите упаковку</p>
-            <div className="grid grid-cols-3 gap-2">
-              {PRODUCTS.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setProduct(p.id)}
-                  className={`relative flex flex-col items-center rounded-xl border-2 px-2 py-3 text-center transition-all ${
-                    product === p.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-white text-muted-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {"badge" in p && p.badge && (
-                    <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
-                      {p.badge}
-                    </span>
-                  )}
-                  {product === p.id && (
-                    <Check
-                      className="absolute right-2 top-2 h-3.5 w-3.5 text-primary"
-                      strokeWidth={3}
-                    />
-                  )}
-                  <span className="text-sm font-bold text-foreground">{p.label}</span>
-                  <span className="mt-0.5 text-xs text-muted-foreground">{p.price}</span>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <ShoppingCart className="h-4 w-4 text-primary" strokeWidth={2.2} />
+                Ваш заказ
+              </p>
+              {hasCart && (
+                <button type="button" onClick={onClearCart}
+                  className="text-xs text-muted-foreground transition-colors hover:text-destructive">
+                  Очистить
                 </button>
-              ))}
+              )}
             </div>
+
+            {hasCart ? (
+              <div className="rounded-xl border border-border bg-background p-4">
+                <ul className="divide-y divide-border">
+                  {cart.map((item) => {
+                    const p = PRODUCTS.find((p) => p.id === item.id)!;
+                    return (
+                      <li key={item.id} className="flex items-center justify-between py-2.5 first:pt-0 last:pb-0">
+                        <div>
+                          <p className="text-sm font-medium">{p.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.qty} шт. × {fmt(p.price)}</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-semibold">{fmt(p.price * item.qty)}</span>
+                          <button type="button" onClick={() => onRemoveFromCart(item.id)}
+                            className="text-muted-foreground transition-colors hover:text-destructive">
+                            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+                          </button>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <div className="mt-3 border-t border-border pt-3 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Итого</span>
+                  <span className="font-serif text-xl font-semibold text-foreground">{fmt(cartTotal)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+                Корзина пуста — выберите товар в каталоге выше
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
             {/* Name */}
             <div>
-              <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
-                Ваше имя
-              </label>
-              <input
-                id="name"
-                name="name"
-                required
-                maxLength={80}
-                placeholder="Как к вам обращаться"
-                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+              <label htmlFor="name" className="mb-1.5 block text-sm font-medium">Ваше имя</label>
+              <input id="name" name="name" required maxLength={80} placeholder="Как к вам обращаться"
+                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20" />
             </div>
 
             {/* Phone */}
             <div>
-              <label htmlFor="phone" className="mb-1.5 block text-sm font-medium">
-                Телефон
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                maxLength={20}
-                placeholder="+7 (___) ___-__-__"
-                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-
-            {/* Количество */}
-            <div>
-              <p className="mb-2.5 text-sm font-medium">Количество банок</p>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 rounded-lg border border-input px-1 py-1">
-                  <button
-                    type="button"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    disabled={qty === 1}
-                    className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
-                  >
-                    <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </button>
-                  <span className="w-6 text-center text-base font-semibold">{qty}</span>
-                  <button
-                    type="button"
-                    onClick={() => setQty((q) => Math.min(10, q + 1))}
-                    disabled={qty === 10}
-                    className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
-                  >
-                    <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  </button>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Итого:</p>
-                  <p className="text-lg font-bold text-foreground">{fmt(total)}</p>
-                </div>
-              </div>
+              <label htmlFor="phone" className="mb-1.5 block text-sm font-medium">Телефон</label>
+              <input id="phone" name="phone" type="tel" required maxLength={20} placeholder="+7 (___) ___-__-__"
+                className="w-full rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20" />
             </div>
 
             {/* Contact method */}
@@ -215,16 +182,12 @@ export const OrderForm = ({ productId, quantity: initialQty }: { productId?: str
               <p className="mb-2.5 text-sm font-medium">Как удобнее связаться</p>
               <div className="flex gap-2">
                 {CONTACTS.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setContact(c.value)}
+                  <button key={c.value} type="button" onClick={() => setContact(c.value)}
                     className={`flex-1 rounded-lg border py-2.5 text-sm font-medium transition-all ${
                       contact === c.value
                         ? "border-primary bg-primary text-white"
                         : "border-border bg-white text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                    }`}
-                  >
+                    }`}>
                     {c.label}
                   </button>
                 ))}
@@ -234,33 +197,17 @@ export const OrderForm = ({ productId, quantity: initialQty }: { productId?: str
             {/* Comment */}
             <div>
               <label htmlFor="comment" className="mb-1.5 block text-sm font-medium">
-                Комментарий{" "}
-                <span className="text-muted-foreground">(необязательно)</span>
+                Комментарий <span className="text-muted-foreground">(необязательно)</span>
               </label>
-              <textarea
-                id="comment"
-                name="comment"
-                rows={2}
-                maxLength={500}
+              <textarea id="comment" name="comment" rows={2} maxLength={500}
                 placeholder="Удобное время, вопросы по заказу..."
-                className="w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
+                className="w-full resize-none rounded-lg border border-input bg-background px-4 py-3 text-base outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20" />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary mt-6 w-full py-4 text-base disabled:opacity-60"
-          >
-            {loading ? (
-              "Отправляем..."
-            ) : (
-              <>
-                Оставить заявку{" "}
-                <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
-              </>
-            )}
+          <button type="submit" disabled={loading || !hasCart}
+            className="btn-primary mt-6 w-full py-4 text-base disabled:opacity-60">
+            {loading ? "Отправляем..." : (<>Оставить заявку <ArrowRight className="h-4 w-4" strokeWidth={2.5} /></>)}
           </button>
 
           <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-primary-soft px-4 py-3">

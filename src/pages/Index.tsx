@@ -7,19 +7,28 @@ import { Compare } from "@/components/landing/Compare";
 import { Science } from "@/components/landing/Science";
 import { Production } from "@/components/landing/Production";
 import { Reviews } from "@/components/landing/Reviews";
-import { Catalog } from "@/components/landing/Catalog";
+import { Catalog, type CartItem } from "@/components/landing/Catalog";
 import { FAQ } from "@/components/landing/FAQ";
 import { OrderForm } from "@/components/landing/OrderForm";
 import { Footer } from "@/components/landing/Footer";
 import { FloatingCall } from "@/components/landing/FloatingCall";
 
 const Index = () => {
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-  const [selectedQuantity, setSelectedQuantity] = useState<number>(1);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const handleOrder = (productId: string, quantity: number) => {
-    setSelectedProduct(productId);
-    setSelectedQuantity(quantity);
+  const addToCart = (id: string, qty: number) => {
+    setCart((prev) => {
+      const exists = prev.find((item) => item.id === id);
+      if (exists) return prev.map((item) => item.id === id ? { ...item, qty } : item);
+      return [...prev, { id, qty }];
+    });
+  };
+
+  const removeFromCart = (id: string) => {
+    setCart((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleCheckout = () => {
     setTimeout(() => {
       document.getElementById("order")?.scrollIntoView({ behavior: "smooth" });
     }, 50);
@@ -27,7 +36,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-<Header />
+      <Header />
       <main>
         <Hero />
         <About />
@@ -36,9 +45,19 @@ const Index = () => {
         <Science />
         <Production />
         <Reviews />
-        <Catalog onOrder={handleOrder} />
+        <Catalog
+          cart={cart}
+          onAddToCart={addToCart}
+          onRemoveFromCart={removeFromCart}
+          onClearCart={() => setCart([])}
+          onCheckout={handleCheckout}
+        />
         <FAQ />
-        <OrderForm productId={selectedProduct} quantity={selectedQuantity} />
+        <OrderForm
+          cart={cart}
+          onRemoveFromCart={removeFromCart}
+          onClearCart={() => setCart([])}
+        />
       </main>
       <Footer />
       <FloatingCall />

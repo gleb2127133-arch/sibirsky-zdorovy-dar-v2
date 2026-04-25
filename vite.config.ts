@@ -19,21 +19,28 @@ const CONTACT_LABELS: Record<string, string> = {
 function buildTgMessage(d: {
   name: string;
   phone: string;
-  product: string;
-  qty?: number;
+  cart: { id: string; qty: number }[];
   contact: string;
   comment?: string;
 }) {
   const now = new Date().toLocaleString("ru-RU", { timeZone: "Europe/Moscow" });
-  const qty = d.qty ?? 1;
-  const productLabel = PRODUCT_LABELS[d.product] ?? d.product;
+  const PRICES: Record<string, number> = { "10": 2590, "20": 3990, "30": 4990 };
+  const cartLines = d.cart.map((item) => {
+    const label = PRODUCT_LABELS[item.id] ?? item.id;
+    const total = (PRICES[item.id] ?? 0) * item.qty;
+    return `  • ${label} × ${item.qty} шт. — ${total.toLocaleString("ru-RU")} ₽`;
+  });
+  const grandTotal = d.cart.reduce((s, item) => s + (PRICES[item.id] ?? 0) * item.qty, 0);
   return [
     "🛒 <b>Новый заказ — Сибирский здоровый дар</b>",
     "",
     `👤 <b>Имя:</b> ${d.name}`,
     `📞 <b>Телефон:</b> ${d.phone}`,
-    `📦 <b>Товар:</b> ${productLabel}`,
-    qty > 1 ? `🔢 <b>Количество:</b> ${qty} шт.` : "",
+    "",
+    "🧺 <b>Состав заказа:</b>",
+    ...cartLines,
+    `💰 <b>Итого: ${grandTotal.toLocaleString("ru-RU")} ₽</b>`,
+    "",
     `💬 <b>Связь через:</b> ${CONTACT_LABELS[d.contact] ?? d.contact}`,
     d.comment ? `📝 <b>Комментарий:</b> ${d.comment}` : "",
     "",
