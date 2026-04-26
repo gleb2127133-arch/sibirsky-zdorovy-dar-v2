@@ -8,7 +8,7 @@ const VkIcon = () => (
 
 export const Footer = () => (
   <footer className="border-t border-border bg-secondary/30 py-14">
-    <div className="container-narrow grid gap-10 md:grid-cols-3">
+    <div className="container-narrow grid gap-10 md:grid-cols-2">
       <div>
         <a href="#top" className="flex items-center gap-2.5 text-lg font-bold text-foreground">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-soft">
@@ -17,7 +17,7 @@ export const Footer = () => (
           <span className="font-serif">ТайгаФлав</span>
         </a>
         <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-          Натуральный дигидрокверцетин из сибирской лиственницы. Сертифицировано в ЕАЭС.
+          Натуральный дигидрокверцетин из сибирской лиственницы. Производство — Иркутская область.
         </p>
         <div className="mt-5 flex gap-3">
           <a
@@ -58,15 +58,6 @@ export const Footer = () => (
         </ul>
       </div>
 
-      <div>
-        <h3 className="font-serif text-base font-bold text-foreground">Документы</h3>
-        <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-          <li><a href="#" className="transition-colors hover:text-primary">Сертификат ТР ТС</a></li>
-          <li><a href="#" className="transition-colors hover:text-primary">Свидетельство СГР</a></li>
-          <li><a href="#" className="transition-colors hover:text-primary">Политика конфиденциальности</a></li>
-          <li><a href="#" className="transition-colors hover:text-primary">Договор оферты</a></li>
-        </ul>
-      </div>
     </div>
 
     <div className="container-narrow mt-10 border-t border-border pt-6 text-xs text-muted-foreground">

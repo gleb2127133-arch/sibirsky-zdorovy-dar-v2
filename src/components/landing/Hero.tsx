@@ -21,7 +21,6 @@ const viewport = { once: true, amount: 0.25 };
 
 const highlights = [
   "Чистота 96%+",
-  "Сертификат СГР ЕАЭС",
   "Сибирская лиственница",
 ];
 
@@ -108,8 +107,6 @@ export const Hero = () => {
       {/* Trust strip */}
       <div className="border-t border-border bg-white">
         <div className="container-narrow flex flex-col items-center justify-between gap-3 py-5 text-center text-xs font-medium uppercase tracking-[0.15em] text-muted-foreground sm:flex-row sm:text-left">
-          <span>СГР Роспотребнадзора</span>
-          <span className="hidden h-1 w-1 rounded-full bg-border sm:block" />
           <span>Производство — Иркутская область</span>
           <span className="hidden h-1 w-1 rounded-full bg-border sm:block" />
           <span>Доставка по РФ от 2 дней</span>
