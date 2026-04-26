@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Gift, Truck, Phone, ArrowRight, ShieldCheck, ShoppingCart, X } from "lucide-react";
+import { Truck, Phone, ArrowRight, ShieldCheck, ShoppingCart, X } from "lucide-react";
 import { type CartItem, PRODUCTS } from "@/components/landing/Catalog";
 
 const CONTACTS = [
@@ -93,7 +93,6 @@ export const OrderForm = ({ cart, onRemoveFromCart, onClearCart }: Props) => {
           </p>
           <ul className="mt-8 space-y-4">
             {[
-              { icon: Gift, t: "3 по цене 2", d: "При заказе трёх упаковок третья — в подарок" },
               { icon: Truck, t: "Бесплатная доставка", d: "От 2 000 ₽ по всей России" },
               { icon: Phone, t: "Связь за 15 минут", d: "С 9:00 до 21:00 МСК ежедневно" },
             ].map(({ icon: Icon, t, d }) => (
