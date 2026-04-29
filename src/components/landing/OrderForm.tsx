@@ -93,8 +93,8 @@ export const OrderForm = ({ cart, onRemoveFromCart, onClearCart }: Props) => {
           </p>
           <ul className="mt-8 space-y-4">
             {[
-              { icon: Truck, t: "Бесплатная доставка", d: "От 2 000 ₽ по всей России" },
-              { icon: Phone, t: "Связь за 15 минут", d: "С 9:00 до 21:00 МСК ежедневно" },
+              { icon: Truck, t: "Бесплатная доставка", d: "По Иркутску бесплатно, в другие города от 2 000 ₽" },
+              { icon: Phone, t: "Связь за 15 минут", d: "С 07:00 до 17:00 МСК ежедневно" },
             ].map(({ icon: Icon, t, d }) => (
               <li key={t} className="flex items-start gap-3">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/15">

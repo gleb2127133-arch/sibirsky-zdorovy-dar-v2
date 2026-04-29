@@ -1,4 +1,5 @@
-import { Leaf, Send, MessageCircle, Phone } from "lucide-react";
+import { Send, MessageCircle, Phone } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 
 const VkIcon = () => (
   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -10,11 +11,9 @@ export const Footer = () => (
   <footer className="border-t border-border bg-secondary/30 py-14">
     <div className="container-narrow grid gap-10 md:grid-cols-2">
       <div>
-        <a href="#top" className="flex items-center gap-2.5 text-lg font-bold text-foreground">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-soft">
-            <Leaf className="h-5 w-5 text-primary" strokeWidth={2.2} />
-          </span>
-          <span className="font-serif">ТайгаФлав</span>
+        <a href="#top" className="flex items-center gap-2 text-lg font-bold text-foreground">
+          <img src={logoImg} alt="АктивПлюс" className="h-10 w-10 object-contain" />
+          <span className="font-serif">АктивПлюс</span>
         </a>
         <p className="mt-4 max-w-xs text-sm text-muted-foreground">
           Натуральный дигидрокверцетин из сибирской лиственницы. Производство — Иркутская область.
@@ -61,7 +60,7 @@ export const Footer = () => (
     </div>
 
     <div className="container-narrow mt-10 border-t border-border pt-6 text-xs text-muted-foreground">
-      © {new Date().getFullYear()} ТайгаФлав. Не является лекарственным средством.
+      © {new Date().getFullYear()} АктивПлюс. Не является лекарственным средством.
       Перед применением проконсультируйтесь со специалистом.
     </div>
   </footer>

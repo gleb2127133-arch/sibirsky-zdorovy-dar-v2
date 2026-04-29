@@ -1,4 +1,5 @@
-import { Leaf, Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
+import logoImg from "@/assets/logo.png";
 import { useState } from "react";
 
 const links = [
@@ -14,11 +15,9 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="container-narrow flex h-16 items-center justify-between">
-        <a href="#top" className="flex items-center gap-2.5 text-lg font-bold text-foreground">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary-soft">
-            <Leaf className="h-5 w-5 text-primary" strokeWidth={2.2} />
-          </span>
-          <span className="font-serif">ТайгаФлав</span>
+        <a href="#top" className="flex items-center gap-2 text-lg font-bold text-foreground">
+          <img src={logoImg} alt="АктивПлюс" className="h-10 w-10 object-contain" />
+          <span className="font-serif">АктивПлюс</span>
         </a>
 
         <nav className="hidden items-center gap-1 md:flex">

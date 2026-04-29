@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Phone } from "lucide-react";
 
 const faqs = [
   {
@@ -23,7 +24,7 @@ const faqs = [
   },
   {
     q: "Как доставляете?",
-    a: "СДЭК, Почта России, самовывоз из пунктов выдачи. По Москве — курьером в день заказа. От 2 000 ₽ доставка бесплатная.",
+    a: "СДЭК, Почта России, самовывоз из пунктов выдачи. По Иркутску — доставка бесплатная. В другие города от 2 000 ₽ в заказе.",
   },
 ];
 
@@ -36,8 +37,15 @@ export const FAQ = () => (
           Частые вопросы
         </h2>
         <p className="mt-4 text-muted-foreground">
-          Не нашли ответ? Напишите в чат или оставьте заявку — перезвоним за 15 минут.
+          Не нашли ответ? Позвоните нам — ответим на любые вопросы.
         </p>
+        <a
+          href="tel:89501144175"
+          className="mt-6 inline-flex items-center gap-2.5 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
+        >
+          <Phone className="h-4 w-4" strokeWidth={2.5} />
+          8 (950) 114-41-75
+        </a>
       </div>
       <Accordion type="single" collapsible className="w-full">
         {faqs.map((f, i) => (
