@@ -20,8 +20,9 @@ const imageVariant: Variants = {
 const viewport = { once: true, amount: 0.25 };
 
 const highlights = [
-  "Чистота 96%+",
-  "Сибирская лиственница",
+  "Без капсул",
+  "Без оболочек",
+  "Контроль количества",
 ];
 
 export const Hero = () => {
@@ -41,15 +42,15 @@ export const Hero = () => {
             variants={item}
             className="mt-6 font-serif text-4xl font-normal leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
           >
-            Дигидрокверцетин{" "}
-            <span className="text-primary">из сибирской лиственницы</span>
+            Чистый дигидрокверцетин{" "}
+            <span className="text-primary">без добавок</span>
           </motion.h1>
 
           <motion.p
             variants={item}
             className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
-            Природный антиоксидант №1 — поддержка сосудов, сердца и иммунитета. До 25 раз эффективнее витамина C.
+            Антиоксидант из лиственницы в порошковой форме с возможностью индивидуальной дозировки
           </motion.p>
 
           <motion.div
@@ -57,17 +58,24 @@ export const Hero = () => {
             className="mt-8 flex flex-col gap-3 sm:flex-row"
           >
             <a href="#catalog" className="btn-primary">
-              Выбрать упаковку
+              Каталог
               <ArrowRight className="h-4 w-4" strokeWidth={2.5} />
             </a>
-            <a href="#about" className="btn-outline">
-              Подробнее о продукте
+            <a href="#faq" className="btn-outline">
+              Как использовать
             </a>
           </motion.div>
 
+          <motion.p
+            variants={item}
+            className="mt-4 text-xs text-muted-foreground/70"
+          >
+            Подходит для тех, кто выбирает осознанный подход к добавкам
+          </motion.p>
+
           <motion.ul
             variants={item}
-            className="mt-10 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2"
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-x-6 sm:gap-y-2"
           >
             {highlights.map((h) => (
               <li key={h} className="flex items-center gap-2 text-sm font-medium text-foreground/75">
