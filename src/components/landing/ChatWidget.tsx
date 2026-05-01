@@ -22,6 +22,12 @@ export const ChatWidget = () => {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    const handler = () => { setOpen(true); setHasUnread(false); };
+    window.addEventListener("open-chat", handler);
+    return () => window.removeEventListener("open-chat", handler);
+  }, []);
+
+  useEffect(() => {
     if (open) { setHasUnread(false); setTimeout(() => inputRef.current?.focus(), 300); }
   }, [open]);
 
@@ -64,14 +70,18 @@ export const ChatWidget = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, sessionId: SESSION_ID }),
-      });
+      const [res] = await Promise.all([
+        fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: trimmed, sessionId: SESSION_ID }),
+        }),
+        new Promise(r => setTimeout(r, 1500 + Math.random() * 1500)),
+      ]);
       const data = await res.json();
-      addMsg({ from: "bot", text: data.reply });
+      if (data.reply) addMsg({ from: "bot", text: data.reply });
       if (data.waitOwner) setWaitingOwner(true);
+      if (data.orderPlaced) addMsg({ from: "bot", text: "Заявка оформлена! Менеджер свяжется с вами в рабочее время с 08:00 до 17:00 МСК." });
     } catch {
       addMsg({ from: "bot", text: "Ошибка соединения. Позвоните нам: 8 (950) 114-41-75" });
     } finally {
@@ -82,7 +92,7 @@ export const ChatWidget = () => {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="fixed bottom-24 right-4 z-50 flex flex-col items-end gap-3 sm:bottom-6 sm:right-6">
+    <div className="fixed bottom-40 right-4 z-50 flex flex-col items-end gap-3 md:bottom-8 md:right-24">
       <AnimatePresence>
         {open && (
           <motion.div
@@ -99,8 +109,8 @@ export const ChatWidget = () => {
                 <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-primary bg-emerald-400" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-white">Поддержка АктивПлюс</p>
-                <p className="text-xs text-white/70">Бот + менеджер на связи</p>
+                <p className="text-sm font-semibold text-white">ИИ-консультант АктивПлюс</p>
+                <p className="text-xs text-white/70">Отвечает мгновенно</p>
               </div>
               <button
                 onClick={() => setOpen(false)}

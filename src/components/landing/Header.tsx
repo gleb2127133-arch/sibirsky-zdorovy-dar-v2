@@ -1,4 +1,4 @@
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, MessageCircle } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useState } from "react";
 
@@ -32,15 +32,24 @@ export const Header = () => {
           ))}
         </nav>
 
-        <a
-          href="tel:89501144175"
-          className="hidden items-center gap-2 text-sm font-semibold text-foreground/80 transition-colors hover:text-primary md:flex"
-        >
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-soft">
-            <Phone className="h-4 w-4 text-primary" strokeWidth={2.5} />
-          </span>
-          8 (950) 114-41-75
-        </a>
+        <div className="hidden items-center gap-3 md:flex">
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-chat"))}
+            className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary-soft px-3.5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-white"
+          >
+            <MessageCircle className="h-4 w-4" strokeWidth={2.2} />
+            ИИ-консультант
+          </button>
+          <a
+            href="tel:89501144175"
+            className="flex items-center gap-2 text-sm font-semibold text-foreground/80 transition-colors hover:text-primary"
+          >
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary-soft">
+              <Phone className="h-4 w-4 text-primary" strokeWidth={2.5} />
+            </span>
+            8 (950) 114-41-75
+          </a>
+        </div>
         <a href="#order" className="btn-primary hidden md:inline-flex">
           Заказать
         </a>

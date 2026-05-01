@@ -21,7 +21,7 @@ const mime = {
 const sessions = new Map(); // sessionId → { ownerReplies: string[], lastActivity: number }
 
 function getSession(id) {
-  if (!sessions.has(id)) sessions.set(id, { ownerReplies: [], lastActivity: Date.now() });
+  if (!sessions.has(id)) sessions.set(id, { ownerReplies: [], managerEngaged: false, lastActivity: Date.now() });
   const s = sessions.get(id);
   s.lastActivity = Date.now();
   return s;
@@ -45,7 +45,7 @@ const FAQ = [
   },
   {
     keys: ['как принима', 'доза', 'дозировк', 'сколько пить', 'как пить', 'как употребл'],
-    answer: 'Принимайте 1 г в день (≈ ¼ чайной ложки).\nРастворите в стакане воды, сока или тёплого чая.\nЛучше утром до еды.\n\nМинимальный курс — 30 дней, рекомендуем 2–3 месяца для полного эффекта.',
+    answer: 'Принимайте 1 г в день (≈ ⅓ чайной ложки).\nРастворите в стакане воды, сока или тёплого чая.\nЛучше утром до еды.\n\nМинимальный курс — 30 дней, рекомендуем 2–3 месяца для полного эффекта.',
   },
   {
     keys: ['когда эффект', 'через сколько', 'когда почувств', 'как быстро', 'долго ждать'],
@@ -76,16 +76,8 @@ const FAQ = [
     answer: 'Продукт производится в Иркутской области и соответствует российским стандартам качества.\nЕсть все необходимые документы на БАД.\nПо запросу можем предоставить информацию — звоните: 8 (950) 114-41-75.',
   },
   {
-    keys: ['привет', 'здравств', 'добрый день', 'добрый вечер', 'добрый утр', 'хай', 'hello'],
-    answer: 'Здравствуйте! Рад помочь 👋\nЗадайте любой вопрос о дигидрокверцетине — расскажу о составе, дозировке, ценах или доставке.',
-  },
-  {
     keys: ['телефон', 'номер', 'позвонить', 'связаться', 'контакт'],
-    answer: 'Телефон: 8 (950) 114-41-75\nРаботаем ежедневно с 07:00 до 17:00 МСК.\n\nТакже можно оформить заявку прямо на сайте — перезвоним в течение 15 минут.',
-  },
-  {
-    keys: ['заказ', 'купить', 'оформить', 'как заказать', 'хочу купить', 'хочу заказать'],
-    answer: 'Оформить заказ можно прямо на сайте — прокрутите вниз до раздела «Каталог».\nВыберите объём, добавьте в корзину и заполните форму.\nМенеджер свяжется в течение 15 минут.',
+    answer: 'Телефон: 8 (950) 114-41-75\nРаботаем ежедневно с 07:00 до 17:00 МСК.',
   },
 ];
 
@@ -95,6 +87,93 @@ function matchFaq(text) {
     if (item.keys.some(k => lower.includes(k))) return item.answer;
   }
   return null;
+}
+
+// ─── Claude AI ───────────────────────────────────────────────────────────────
+const CLAUDE_SYSTEM = `Ты — Алекс, эксперт-консультант и топовый продавец интернет-магазина АктивПлюс. Твоя цель — помочь клиенту решить его проблему со здоровьем и оформить заказ прямо в чате.
+
+ПРОДУКТ:
+- Дигидрокверцетин (ДГК) — чистый порошок без добавок из сибирской лиственницы, Иркутская область
+- Антиоксидант в 25 раз мощнее витамина C
+- Поддерживает сосуды, иммунитет, давление, восстановление после нагрузок и болезней
+- Форма: порошок, растворяется в воде/соке/чае
+
+КАК ПРИНИМАТЬ: ⅓ чайной ложки в день в воде/соке/чае, утром до еды. Курс 2–3 месяца. Эффект с 2–3 недели.
+ВАЖНО: никогда не говори "1 грамм" или "1 г" — всегда говори только "⅓ чайной ложки".
+
+ЦЕНЫ И ОБЪЁМЫ:
+- 10 г — 2 590 ₽ (~30 дней) — попробовать
+- 20 г — 3 990 ₽ (~60 дней) — выгоднее, большинство берут
+- 30 г — 4 990 ₽ (~90 дней) — максимальный результат, лучшая цена за грамм
+
+ДОСТАВКА: по Иркутску бесплатно, по РФ от 2 дней (СДЭК, Почта России)
+ГАРАНТИЯ: возврат 30 дней без вопросов
+ТЕЛЕФОН: 8 (950) 114-41-75, с 07:00 до 17:00 МСК
+
+СТРАТЕГИЯ ПРОДАЖИ (следуй этим шагам):
+1. Поприветствуй тепло и сразу спроси — какую проблему хочет решить или что интересует
+2. Внимательно выслушай, задай уточняющий вопрос если нужно
+3. Дай конкретный совет — какой объём подойдёт и почему (исходя из его ситуации)
+4. Закрой возражения — если сомневается в цене, напомни про гарантию возврата и выгоду большого объёма
+5. Когда клиент готов заказать — собери по очереди: имя, телефон, город доставки
+6. Подтверди заказ и скажи что менеджер свяжется в рабочее время с 08:00 до 17:00 МСК
+
+КОГДА СОБРАНЫ ВСЕ ДАННЫЕ (имя + телефон + город + выбранный товар):
+Напиши клиенту подтверждение, а в самом конце ответа на отдельной строке добавь:
+[[ORDER:{"name":"ИМЯ","phone":"ТЕЛЕФОН","city":"ГОРОД","product":"ТОВАР"}]]
+
+ПРАВИЛА:
+- Отвечай коротко — 2–4 предложения, живым разговорным языком
+- Никогда не называй продукт лекарством, не обещай лечение болезней
+- На вопросы о конкретных болезнях: "ДГК поддерживает организм как БАД, по лечению — к врачу. Давайте я расскажу что он даёт?"
+- На посторонние вопросы (погода, политика, другие товары и т.д.): "Я специализируюсь только на дигидрокверцетине АктивПлюс — давайте я лучше помогу вам с выбором?"
+- Будь живым, тёплым, не занудным. Не перечисляй всё сразу — веди диалог
+- Не придумывай данных которых нет выше`;
+
+function claudeChat(history, userMessage, cb) {
+  const apiKey = process.env.CLAUDE_API_KEY;
+  if (!apiKey) return cb(null, null);
+
+  const messages = [
+    ...history.map(m => ({ role: m.role === 'model' ? 'assistant' : 'user', content: m.text })),
+    { role: 'user', content: userMessage },
+  ];
+
+  const body = JSON.stringify({
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 300,
+    system: CLAUDE_SYSTEM,
+    messages,
+  });
+
+  const req = https.request(
+    'https://api.anthropic.com/v1/messages',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    },
+    (r) => {
+      let raw = '';
+      r.on('data', c => { raw += c; });
+      r.on('end', () => {
+        try {
+          const json = JSON.parse(raw);
+          const text = json.content?.[0]?.text || null;
+          cb(null, text);
+        } catch {
+          cb(null, null);
+        }
+      });
+    }
+  );
+  req.on('error', () => cb(null, null));
+  req.write(body);
+  req.end();
 }
 
 // ─── Telegram ────────────────────────────────────────────────────────────────
@@ -240,19 +319,61 @@ http.createServer((req, res) => {
       if (!message || !sessionId) return json({ ok: false }, 400);
 
       getSession(sessionId);
-      const answer = matchFaq(message);
-      notifyChat(sessionId, message, answer);
+      const session = getSession(sessionId);
+      const faqAnswer = matchFaq(message);
 
-      if (answer) {
-        json({ ok: true, reply: answer, source: 'bot' });
-      } else {
+      if (faqAnswer) {
+        notifyChat(sessionId, message, faqAnswer);
+        return json({ ok: true, reply: faqAnswer, source: 'bot' });
+      }
+
+      // FAQ не знает — пробуем Claude
+      const history = session.history || [];
+      claudeChat(history, message, (err, claudeReply) => {
+        if (claudeReply) {
+          // Парсим [[ORDER:...]] если Claude оформил заказ
+          const orderMatch = claudeReply.match(/\[\[ORDER:(\{.*?\})\]\]/s);
+          let orderPlaced = false;
+          let cleanReply = claudeReply
+            .replace(/\[\[ORDER:.*?\]\]/s, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .trim();
+
+          if (orderMatch) {
+            try {
+              const order = JSON.parse(orderMatch[1]);
+              const now = new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' });
+              const tgText = [
+                '🛒 <b>Заявка из чата — АктивПлюс</b>', '',
+                `👤 <b>Имя:</b> ${order.name}`,
+                `📞 <b>Телефон:</b> ${order.phone}`,
+                `📍 <b>Город:</b> ${order.city}`,
+                `📦 <b>Товар:</b> ${order.product}`,
+                '', `⏰ ${now} МСК`,
+              ].join('\n');
+              tgRequest('sendMessage', { chat_id: process.env.TG_CHAT_ID, text: tgText, parse_mode: 'HTML' });
+              orderPlaced = true;
+            } catch {}
+          }
+
+          session.history = [...history, { role: 'user', text: message }, { role: 'model', text: claudeReply }];
+          notifyChat(sessionId, message, cleanReply);
+          return json({ ok: true, reply: cleanReply, source: 'claude', orderPlaced });
+        }
+        // Claude недоступен — передаём менеджеру
+        notifyChat(sessionId, message, null);
+        if (session.managerEngaged) {
+          return json({ ok: true, reply: null, source: 'bot', waitOwner: true });
+        }
+        session.managerEngaged = true;
         json({
           ok: true,
-          reply: 'Хороший вопрос! Я передал его менеджеру — он ответит в течение нескольких минут. Можете также позвонить: 8 (950) 114-41-75',
+          reply: 'Передаю вопрос менеджеру — ответит в течение нескольких минут. Также можно позвонить: 8 (950) 114-41-75',
           source: 'bot',
           waitOwner: true,
         });
-      }
+      });
     });
     return;
   }

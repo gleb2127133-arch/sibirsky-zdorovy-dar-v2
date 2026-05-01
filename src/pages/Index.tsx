@@ -14,6 +14,7 @@ import { OrderForm } from "@/components/landing/OrderForm";
 import { Footer } from "@/components/landing/Footer";
 import { FloatingCall } from "@/components/landing/FloatingCall";
 import { FloatingCart } from "@/components/landing/FloatingCart";
+import { ChatWidget } from "@/components/landing/ChatWidget";
 
 const Index = () => {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -65,6 +66,7 @@ const Index = () => {
       <Footer />
       <FloatingCall />
       <FloatingCart cart={cart} />
+      <ChatWidget />
     </div>
   );
 };

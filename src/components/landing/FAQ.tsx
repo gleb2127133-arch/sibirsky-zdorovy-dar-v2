@@ -1,5 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Phone } from "lucide-react";
+import { Phone, MessageCircle } from "lucide-react";
 
 const faqs = [
   {
@@ -37,14 +37,21 @@ export const FAQ = () => (
           Частые вопросы
         </h2>
         <p className="mt-4 text-muted-foreground">
-          Не нашли ответ? Позвоните нам — ответим на любые вопросы.
+          Не нашли ответ? Наш ИИ-консультант ответит на любой вопрос мгновенно.
         </p>
-        <a
-          href="tel:89501144175"
+        <button
+          onClick={() => window.dispatchEvent(new Event("open-chat"))}
           className="mt-6 inline-flex items-center gap-2.5 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-95"
         >
+          <MessageCircle className="h-4 w-4" strokeWidth={2.5} />
+          Спросить консультанта
+        </button>
+        <a
+          href="tel:89501144175"
+          className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+        >
           <Phone className="h-4 w-4" strokeWidth={2.5} />
-          8 (950) 114-41-75
+          или позвонить: 8 (950) 114-41-75
         </a>
       </div>
       <Accordion type="single" collapsible className="w-full">
