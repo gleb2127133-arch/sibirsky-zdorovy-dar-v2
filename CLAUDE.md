@@ -5,28 +5,151 @@
 Лендинг по продаже **Дигидрокверцетина (ДГК)** — натурального антиоксиданта из сибирской лиственницы.
 Бренд: **АктивПлюс**. Производство: Иркутская область. Целевая аудитория: 35–65 лет, РФ.
 Продукт: порошок, 3 объёма — 10 г (2 590 ₽), 20 г (3 990 ₽), 30 г (4 990 ₽).
-Телефон: 8 (950) 114-41-75. Часы: 07:00–17:00 МСК.
+Телефон: 8 (950) 114-41-75. Рабочие часы: **08:00–17:00 МСК**.
 
 **Стек:** React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion + Radix UI + Zod + Sonner
-**Деплой:** GitHub → https://github.com/gleb2127133-arch/sibirsky-zdorovy-dar-v2
+**GitHub:** https://github.com/gleb2127133-arch/sibirsky-zdorovy-dar-v2
 
-### Структура компонентов
+---
+
+## Деплой и инфраструктура
+
+### Сервер
+- **VPS Beget:** `root@155.212.139.126`
+- **Домен:** `activepluse.ru` (DNS зарегистрирован, может ещё не пропагировался — проверять `curl http://activepluse.ru`)
+- **Порт приложения:** 3000 (Node.js сервер)
+- **Nginx:** reverse proxy 80 → 3000, конфиг в `/etc/nginx/sites-available/aktivplus`
+- **PM2:** управляет процессом `aktivplus`
+- **SSL:** ещё не установлен — после пропагации DNS: `certbot --nginx -d activepluse.ru`
+
+### Переменные окружения (нужны при старте PM2)
+```
+TG_BOT_TOKEN=<токен бота>
+TG_CHAT_ID=<chat id владельца>
+CLAUDE_API_KEY=<ключ Claude API>
+```
+
+### Команда деплоя (полный цикл)
+```bash
+# 1. Сборка и загрузка на сервер
+npm run build
+rsync -avz --delete dist/ root@155.212.139.126:/var/www/aktivplus/dist/
+rsync -avz server.cjs root@155.212.139.126:/var/www/aktivplus/
+
+# 2. Перезапуск PM2 на сервере (ОБЯЗАТЕЛЬНО с env vars — PM2 их не запоминает)
+ssh root@155.212.139.126
+cd /var/www/aktivplus
+pm2 delete aktivplus
+TG_BOT_TOKEN=xxx TG_CHAT_ID=xxx CLAUDE_API_KEY=xxx pm2 start server.cjs --name aktivplus
+pm2 save
+```
+
+**ВАЖНО:** Всегда `pm2 delete` + `pm2 start` с переменными. `pm2 restart` теряет env vars.
+
+### Обновление GitHub
+После изменений в коде:
+```bash
+git add src/ server.cjs CLAUDE.md
+git commit -m "описание изменений"
+git push
+```
+Если push отклонён: `git stash && git pull --rebase && git stash pop && git push`
+Не коммить: `.DS_Store`, `.env`, `node_modules`
+
+---
+
+## Архитектура сервера (server.cjs)
+
+### API эндпоинты
+- `POST /api/order` — принимает заказ, отправляет в Telegram
+- `POST /api/chat` — чат с ИИ-консультантом (тело: `{ message, sessionId }`)
+- `GET /api/chat-poll?session=ID` — фронт polling для получения ответов менеджера
+
+### Логика /api/chat (три уровня)
+1. **FAQ-матч** — быстрые ответы на ключевые слова без API (бесплатно)
+2. **Claude AI** — модель `claude-haiku-4-5-20251001` через `https://api.anthropic.com/v1/messages`
+3. **Ручной режим** — если Claude не знает ответа, шлёт уведомление в Telegram и ставит `waitOwner: true`
+
+### Сессии (in-memory Map)
+```js
+sessions.get(sessionId) = {
+  ownerReplies: [],      // ответы менеджера для polling
+  managerEngaged: false, // флаг: менеджер уже уведомлён
+  history: [],           // история для Claude (role: user/assistant)
+  lastActivity: Date.now()
+}
+```
+
+### Telegram polling
+- Бот каждые 3 секунды проверяет getUpdates
+- Ответы менеджера из Telegram → раскидывает по сессиям через `sessions.get(sessionId).ownerReplies.push(text)`
+- Формат ответа менеджера в Telegram: начать с `SESSION_ID: текст ответа`
+
+### Автозаявка (ORDER detection)
+- Claude пишет `[[ORDER:{"name":"...","phone":"...","product":"..."}]]` в конец ответа
+- Сервер детектит regex `/\[\[ORDER:(\{.*?\})\]\]/s`, парсит JSON, шлёт в Telegram
+- Из ответа клиенту паттерн вырезается
+
+### Форматирование ответов Claude
+- Убираем markdown: `.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')`
+
+---
+
+## ИИ-консультант Алекс (системный промт)
+
+Персонаж: **Алекс**, дружелюбный эксперт АктивПлюс.
+Цель: плавно вести клиента к покупке через вопросы и советы.
+
+### Ключевые правила промта
+- Дозировка: ВСЕГДА "⅓ чайной ложки" — **НИКОГДА "1 грамм" или "1 г"**
+- Рабочие часы менеджера: 08:00–17:00 МСК (не "15 минут")
+- Не называть себя Claude или AI — только "ИИ-консультант" или "Алекс"
+- Продажная воронка: выяснить цель → посоветовать объём → мягко подтолкнуть к заказу
+- Оформление заявки: когда клиент готов — собрать имя и телефон, вставить `[[ORDER:{...}]]`
+
+---
+
+## Структура компонентов
+
 - `src/pages/Index.tsx` — корневая страница, хранит состояние корзины
 - `src/components/landing/Hero.tsx` — первый экран
 - `src/components/landing/About.tsx` — о продукте
 - `src/components/landing/Effects.tsx` — эффекты
+- `src/components/landing/CourseTimeline.tsx` — **НОВЫЙ** — визуальный таймлайн курса (4 шага, анимированные счётчики, тёмный фон с зелёным свечением)
 - `src/components/landing/Compare.tsx` — сравнение с конкурентами
 - `src/components/landing/Science.tsx` — научная база
 - `src/components/landing/Production.tsx` — производство
-- `src/components/landing/Reviews.tsx` — отзывы (6 штук)
+- `src/components/landing/Reviews.tsx` — отзывы (6 штук, нужны реальные фото)
 - `src/components/landing/Catalog.tsx` — каталог + корзина (экспортирует `CartItem`, `PRODUCTS`)
-- `src/components/landing/FAQ.tsx` — частые вопросы
+- `src/components/landing/FAQ.tsx` — частые вопросы + кнопка открытия чата
 - `src/components/landing/OrderForm.tsx` — форма заказа (принимает cart из Index.tsx)
-- `src/components/landing/Header.tsx` — шапка с логотипом и телефоном
-- `src/components/landing/Footer.tsx` — подвал
+- `src/components/landing/Header.tsx` — шапка: логотип, навигация, кнопка "ИИ-консультант", телефон
+- `src/components/landing/Footer.tsx` — подвал (соцсети пока `href="#"`, ИНН не добавлен)
 - `src/components/landing/FloatingCall.tsx` — плавающая кнопка звонка (мобайл)
-- `src/components/landing/FloatingCart.tsx` — плавающая кнопка корзины (всегда)
-- `src/assets/logo.png` — логотип бренда (используется в Header и Footer)
+- `src/components/landing/FloatingCart.tsx` — плавающая корзина: `bottom-24 right-5` моб, `bottom-8 right-6` десктоп
+- `src/components/landing/ChatWidget.tsx` — **НОВЫЙ** — чат с ИИ, позиция: `bottom-40 right-4` моб, `bottom-8 right-24` десктоп
+- `src/assets/logo.png` — логотип бренда
+
+### Порядок секций на странице
+Hero → About → Effects → **CourseTimeline** → Compare → Science → Production → Reviews → Catalog → FAQ → OrderForm
+
+### Кнопка открытия чата (в Header, FAQ и других местах)
+```tsx
+<button onClick={() => window.dispatchEvent(new Event("open-chat"))}>
+  ИИ-консультант
+</button>
+```
+ChatWidget слушает это событие через `window.addEventListener("open-chat", ...)`.
+
+---
+
+## Что ещё не сделано (технический долг)
+
+1. **SSL сертификат** — после пропагации DNS: `certbot --nginx -d activepluse.ru`
+2. **Яндекс.Метрика** — подключить после того как домен заработает
+3. **Реальные фото клиентов** в Reviews.tsx (сейчас заглушки)
+4. **Соцсети в Footer** — ссылки на ВКонтакте и Telegram пока `href="#"`
+5. **ИНН/ОГРНИП** в Footer — не добавлен
 
 ---
 
@@ -101,21 +224,11 @@
 
 ---
 
-## Рабочие правила (технические)
-
-- Перед редактированием файла — всегда читай его (`Read`)
-- Не создавай новые файлы если можно отредактировать существующие
-- Не добавляй комментарии в код без крайней необходимости
-- После изменений предлагай задеплоить на GitHub (`git add → git commit → git push`)
-- Если push отклонён — делай `git stash && git pull --rebase && git stash pop && git push`
-- Не коммить `.DS_Store`, `.env`, `node_modules`
-- Локальный сервер: `npm run dev` → `http://localhost:3000`
-
----
-
 ## Что знаешь о владельце
 
-- Начинающий предприниматель, не разработчик — объясняй технические вещи просто
+- **Глеб Баринов** — начинающий предприниматель, не разработчик
+- Объясняй технические вещи простым языком
 - Цель: продавать ДГК онлайн по всей России, особенно Иркутск и Сибирь
 - Хочет честную обратную связь, а не одобрение
 - Ценит конкретику и скорость — не разжёвывай очевидное
+- WhatsApp заблокирован — коммуникации через Telegram
