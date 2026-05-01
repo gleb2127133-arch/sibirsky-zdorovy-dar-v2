@@ -92,7 +92,7 @@ export const ChatWidget = () => {
   const isEmpty = messages.length === 0;
 
   return (
-    <div className="fixed bottom-40 right-4 z-50 flex flex-col items-end gap-3 md:bottom-8 md:right-24">
+    <div className="fixed bottom-56 right-4 z-50 flex flex-col items-end gap-3 md:bottom-8 md:right-24">
       <AnimatePresence>
         {open && (
           <motion.div
