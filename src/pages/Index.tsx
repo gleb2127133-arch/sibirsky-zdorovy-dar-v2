@@ -12,6 +12,7 @@ import { Catalog, type CartItem } from "@/components/landing/Catalog";
 import { FAQ } from "@/components/landing/FAQ";
 import { OrderForm } from "@/components/landing/OrderForm";
 import { Footer } from "@/components/landing/Footer";
+import { HowToUse } from "@/components/landing/HowToUse";
 import { FloatingCall } from "@/components/landing/FloatingCall";
 import { FloatingCart } from "@/components/landing/FloatingCart";
 import { ChatWidget } from "@/components/landing/ChatWidget";
@@ -56,6 +57,7 @@ const Index = () => {
           onClearCart={() => setCart([])}
           onCheckout={handleCheckout}
         />
+        <HowToUse />
         <FAQ />
         <OrderForm
           cart={cart}
