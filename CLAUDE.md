@@ -4,8 +4,9 @@
 
 Лендинг по продаже **Дигидрокверцетина (ДГК)** — натурального антиоксиданта из сибирской лиственницы.
 Бренд: **АктивПлюс**. Производство: Иркутская область. Целевая аудитория: 35–65 лет, РФ.
-Продукт: порошок, 3 объёма — 10 г (2 590 ₽), 20 г (3 990 ₽), 30 г (4 990 ₽).
+Продукт: порошок, чистота **96%+**, 3 объёма — 10 г (2 590 ₽), 20 г (3 990 ₽), 30 г (4 990 ₽).
 Телефон: 8 (950) 114-41-75. Рабочие часы: **08:00–17:00 МСК**.
+Дозировка: **1/5 чайной ложки** в день — никогда не писать "1 грамм" или "1 г".
 
 **Стек:** React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion + Radix UI + Zod + Sonner
 **GitHub:** https://github.com/gleb2127133-arch/sibirsky-zdorovy-dar-v2
@@ -16,79 +17,82 @@
 
 ### Сервер
 - **VPS Beget:** `root@155.212.139.126`
-- **Домен:** `activepluse.ru` (DNS зарегистрирован, может ещё не пропагировался — проверять `curl http://activepluse.ru`)
+- **Домен:** `https://activepluse.ru` — работает, **SSL установлен** (Let's Encrypt, до 02.08.2026, автопродление)
 - **Порт приложения:** 3000 (Node.js сервер)
-- **Nginx:** reverse proxy 80 → 3000, конфиг в `/etc/nginx/sites-available/aktivplus`
+- **Nginx:** reverse proxy 80/443 → 3000, конфиг в `/etc/nginx/sites-available/aktivplus`
 - **PM2:** управляет процессом `aktivplus`
-- **SSL:** ещё не установлен — после пропагации DNS: `certbot --nginx -d activepluse.ru`
 
-### Переменные окружения (нужны при старте PM2)
-```
-TG_BOT_TOKEN=<токен бота>
-TG_CHAT_ID=<chat id владельца>
-CLAUDE_API_KEY=<ключ Claude API>
+### Переменные окружения — хранятся в файле на сервере
+Файл `/var/www/aktivplus/ecosystem.config.cjs` — содержит все ключи, **не заливать на GitHub**.
+```js
+// ecosystem.config.cjs (на сервере)
+module.exports = {
+  apps: [{ name: 'aktivplus', script: 'server.cjs', env: {
+    TG_BOT_TOKEN: '...',
+    TG_CHAT_ID: '...',
+    CLAUDE_API_KEY: '...'
+  }}]
+}
 ```
 
 ### Команда деплоя (полный цикл)
 ```bash
-# 1. Сборка и загрузка на сервер
+# 1. Сборка и загрузка фронта
 npm run build
 rsync -avz --delete dist/ root@155.212.139.126:/var/www/aktivplus/dist/
-rsync -avz server.cjs root@155.212.139.126:/var/www/aktivplus/
 
-# 2. Перезапуск PM2 на сервере (ОБЯЗАТЕЛЬНО с env vars — PM2 их не запоминает)
-ssh root@155.212.139.126
-cd /var/www/aktivplus
-pm2 delete aktivplus
-TG_BOT_TOKEN=xxx TG_CHAT_ID=xxx CLAUDE_API_KEY=xxx pm2 start server.cjs --name aktivplus
-pm2 save
+# 2. Если менялся server.cjs
+rsync -avz /полный/путь/server.cjs root@155.212.139.126:/var/www/aktivplus/server.cjs
+
+# 3. Перезапуск (ключи берёт из ecosystem.config.cjs — не нужно передавать вручную)
+ssh root@155.212.139.126 "cd /var/www/aktivplus && pm2 restart ecosystem.config.cjs"
 ```
 
-**ВАЖНО:** Всегда `pm2 delete` + `pm2 start` с переменными. `pm2 restart` теряет env vars.
-
 ### Обновление GitHub
-После изменений в коде:
 ```bash
-git add src/ server.cjs CLAUDE.md
+git add src/ server.cjs CLAUDE.md index.html public/
 git commit -m "описание изменений"
 git push
 ```
 Если push отклонён: `git stash && git pull --rebase && git stash pop && git push`
-Не коммить: `.DS_Store`, `.env`, `node_modules`
+Не коммить: `.DS_Store`, `.env`, `node_modules`, `ecosystem.config.cjs`
 
 ---
 
 ## Архитектура сервера (server.cjs)
 
 ### API эндпоинты
-- `POST /api/order` — принимает заказ, отправляет в Telegram
+- `POST /api/order` — принимает заказ из формы, отправляет в Telegram
 - `POST /api/chat` — чат с ИИ-консультантом (тело: `{ message, sessionId }`)
 - `GET /api/chat-poll?session=ID` — фронт polling для получения ответов менеджера
 
 ### Логика /api/chat (три уровня)
 1. **FAQ-матч** — быстрые ответы на ключевые слова без API (бесплатно)
 2. **Claude AI** — модель `claude-haiku-4-5-20251001` через `https://api.anthropic.com/v1/messages`
-3. **Ручной режим** — если Claude не знает ответа, шлёт уведомление в Telegram и ставит `waitOwner: true`
+3. **Ручной режим** — если Claude недоступен, уведомляет менеджера в Telegram и ставит `waitOwner: true`
 
 ### Сессии (in-memory Map)
 ```js
 sessions.get(sessionId) = {
   ownerReplies: [],      // ответы менеджера для polling
-  managerEngaged: false, // флаг: менеджер уже уведомлён
-  history: [],           // история для Claude (role: user/assistant)
+  managerEngaged: false, // флаг: менеджер уже уведомлён (чтобы не спамить)
+  history: [],           // история для Claude (role: user/model)
   lastActivity: Date.now()
 }
 ```
 
-### Telegram polling
-- Бот каждые 3 секунды проверяет getUpdates
-- Ответы менеджера из Telegram → раскидывает по сессиям через `sessions.get(sessionId).ownerReplies.push(text)`
-- Формат ответа менеджера в Telegram: начать с `SESSION_ID: текст ответа`
+### Telegram уведомления (две отдельных сообщения)
+- **Заявка** — `🛒 Заявка из чата` с именем, телефоном, городом, товаром
+- **История чата** — `💬 История чата` — полный диалог клиента с ботом
+- Оба сообщения отправляются одновременно когда Claude оформляет заказ (`[[ORDER:...]]`)
+- Если нужен менеджер вручную — приходит `❓ Клиент ждёт менеджера` + история чата
+
+### Ответ менеджера из Telegram на сайт
+Формат: `SESSIONID текст ответа` (8-символьный ID через пробел)
 
 ### Автозаявка (ORDER detection)
-- Claude пишет `[[ORDER:{"name":"...","phone":"...","product":"..."}]]` в конец ответа
-- Сервер детектит regex `/\[\[ORDER:(\{.*?\})\]\]/s`, парсит JSON, шлёт в Telegram
-- Из ответа клиенту паттерн вырезается
+- Claude пишет `[[ORDER:{"name":"...","phone":"...","city":"...","product":"..."}]]`
+- Сервер парсит, шлёт в Telegram, вырезает из ответа клиенту
 
 ### Форматирование ответов Claude
 - Убираем markdown: `.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')`
@@ -97,15 +101,18 @@ sessions.get(sessionId) = {
 
 ## ИИ-консультант Алекс (системный промт)
 
-Персонаж: **Алекс**, дружелюбный эксперт АктивПлюс.
-Цель: плавно вести клиента к покупке через вопросы и советы.
+Персонаж: **Алекс**, эксперт-консультант АктивПлюс.
+Цель: плавно вести клиента к покупке через диалог.
 
 ### Ключевые правила промта
-- Дозировка: ВСЕГДА "⅓ чайной ложки" — **НИКОГДА "1 грамм" или "1 г"**
-- Рабочие часы менеджера: 08:00–17:00 МСК (не "15 минут")
+- Обращение: всегда **"Вы"** с большой буквы, никогда "ты"
+- Дозировка: ВСЕГДА **"1/5 чайной ложки"** — никогда "1 грамм" или "1 г"
+- Чистота продукта: **96%+** — упоминать при вопросах о составе и качестве
+- Доставка: стоимость и сроки **не называть** — "сориентируем при оформлении заказа"
+- Рабочие часы менеджера: 08:00–17:00 МСК
 - Не называть себя Claude или AI — только "ИИ-консультант" или "Алекс"
-- Продажная воронка: выяснить цель → посоветовать объём → мягко подтолкнуть к заказу
-- Оформление заявки: когда клиент готов — собрать имя и телефон, вставить `[[ORDER:{...}]]`
+- Говорить о продукте только факты из промта — не придумывать
+- Продажная воронка: выяснить цель → посоветовать объём → собрать данные → оформить заявку
 
 ---
 
@@ -115,41 +122,47 @@ sessions.get(sessionId) = {
 - `src/components/landing/Hero.tsx` — первый экран
 - `src/components/landing/About.tsx` — о продукте
 - `src/components/landing/Effects.tsx` — эффекты
-- `src/components/landing/CourseTimeline.tsx` — **НОВЫЙ** — визуальный таймлайн курса (4 шага, анимированные счётчики, тёмный фон с зелёным свечением)
+- `src/components/landing/CourseTimeline.tsx` — таймлайн курса (4 шага, анимированные счётчики, тёмный фон)
 - `src/components/landing/Compare.tsx` — сравнение с конкурентами
 - `src/components/landing/Science.tsx` — научная база
 - `src/components/landing/Production.tsx` — производство
-- `src/components/landing/Reviews.tsx` — отзывы (6 штук, нужны реальные фото)
+- `src/components/landing/Reviews.tsx` — 5 отзывов + 1 карточка с реальным фото продукта
 - `src/components/landing/Catalog.tsx` — каталог + корзина (экспортирует `CartItem`, `PRODUCTS`)
 - `src/components/landing/FAQ.tsx` — частые вопросы + кнопка открытия чата
 - `src/components/landing/OrderForm.tsx` — форма заказа (принимает cart из Index.tsx)
 - `src/components/landing/Header.tsx` — шапка: логотип, навигация, кнопка "ИИ-консультант", телефон
 - `src/components/landing/Footer.tsx` — подвал (соцсети пока `href="#"`, ИНН не добавлен)
-- `src/components/landing/FloatingCall.tsx` — плавающая кнопка звонка (мобайл)
-- `src/components/landing/FloatingCart.tsx` — плавающая корзина: `bottom-24 right-5` моб, `bottom-8 right-6` десктоп
-- `src/components/landing/ChatWidget.tsx` — **НОВЫЙ** — чат с ИИ, позиция: `bottom-40 right-4` моб, `bottom-8 right-24` десктоп
-- `src/assets/logo.png` — логотип бренда
+- `src/components/landing/FloatingCall.tsx` — плавающая кнопка звонка (мобайл, md:hidden)
+- `src/components/landing/FloatingCart.tsx` — корзина: `bottom-24 right-5` моб, `bottom-8 right-6` десктоп
+- `src/components/landing/ChatWidget.tsx` — чат с ИИ: `bottom-44 right-5` моб, `bottom-8 right-24` десктоп
+- `src/assets/logo.png` — логотип (используется в Header, Footer, favicon)
+- `src/assets/product-review.jpeg` — фото продукта (баночки + упаковка), используется в Reviews
 
 ### Порядок секций на странице
-Hero → About → Effects → **CourseTimeline** → Compare → Science → Production → Reviews → Catalog → FAQ → OrderForm
+Hero → About → Effects → CourseTimeline → Compare → Science → Production → Reviews → Catalog → FAQ → OrderForm
 
-### Кнопка открытия чата (в Header, FAQ и других местах)
+### Кнопка открытия чата (везде одинаково)
 ```tsx
 <button onClick={() => window.dispatchEvent(new Event("open-chat"))}>
   ИИ-консультант
 </button>
 ```
-ChatWidget слушает это событие через `window.addEventListener("open-chat", ...)`.
+
+---
+
+## index.html — что настроено
+- Favicon: `/logo.png` (наш логотип, не Lovable)
+- og:image: `https://activepluse.ru/logo.png`
+- author: "АктивПлюс"
+- title/description: про дигидрокверцетин АктивПлюс
 
 ---
 
 ## Что ещё не сделано (технический долг)
 
-1. **SSL сертификат** — после пропагации DNS: `certbot --nginx -d activepluse.ru`
-2. **Яндекс.Метрика** — подключить после того как домен заработает
-3. **Реальные фото клиентов** в Reviews.tsx (сейчас заглушки)
-4. **Соцсети в Footer** — ссылки на ВКонтакте и Telegram пока `href="#"`
-5. **ИНН/ОГРНИП** в Footer — не добавлен
+1. **Яндекс.Метрика** — подключить (домен работает, можно делать)
+2. **Соцсети в Footer** — ссылки на ВКонтакте и Telegram пока `href="#"`
+3. **ИНН/ОГРНИП** в Footer — не добавлен
 
 ---
 
@@ -220,7 +233,6 @@ ChatWidget слушает это событие через `window.addEventListe
 - Запрещено по закону: называть продукт лекарством, обещать лечение болезней
 - Можно: "поддерживает", "способствует", "природный антиоксидант"
 - Социальное доказательство критично — отзывы, цифры, исследования
-- Страх потери работает лучше обещания выгоды — используй осторожно
 
 ---
 
