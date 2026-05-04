@@ -199,20 +199,29 @@ function tgRequest(method, body, cb) {
   req.end();
 }
 
-function notifyChat(sessionId, userMessage, botAnswer) {
+function sendChatHistory(sessionId, history) {
+  const chatId = process.env.TG_CHAT_ID;
+  if (!chatId || !history || !history.length) return;
+  const lines = history.map(m => {
+    const who = m.role === 'user' ? '🧑 Клиент' : '🤖 Бот';
+    return `${who}: ${m.text.replace(/\[\[ORDER:.*?\]\]/s, '').replace(/\*\*(.*?)\*\*/g, '$1').trim()}`;
+  });
+  const text = [`💬 <b>История чата</b> [<code>${sessionId}</code>]`, '', ...lines].join('\n');
+  // Telegram limit 4096 chars
+  const chunks = [];
+  for (let i = 0; i < text.length; i += 4000) chunks.push(text.slice(i, i + 4000));
+  chunks.forEach(chunk => tgRequest('sendMessage', { chat_id: chatId, text: chunk, parse_mode: 'HTML' }));
+}
+
+function notifyManagerNeeded(sessionId) {
   const chatId = process.env.TG_CHAT_ID;
   if (!chatId) return;
-  const hasAnswer = !!botAnswer;
   const text = [
-    `💬 <b>Чат на сайте</b> [<code>${sessionId}</code>]`,
+    `❓ <b>Клиент ждёт менеджера</b> [<code>${sessionId}</code>]`,
     '',
-    `🧑 <b>Клиент:</b> ${userMessage}`,
-    '',
-    hasAnswer
-      ? `🤖 <b>Бот ответил:</b> ${botAnswer.replace(/\n/g, ' ').slice(0, 120)}...`
-      : `❓ <b>Бот не знает ответ</b>\n\nЧтобы ответить клиенту напишите боту:\n<code>${sessionId} Ваш ответ</code>`,
-  ].filter(Boolean).join('\n');
-
+    `Чтобы ответить напишите боту:`,
+    `<code>${sessionId} Ваш ответ</code>`,
+  ].join('\n');
   tgRequest('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML' });
 }
 
@@ -337,6 +346,9 @@ http.createServer((req, res) => {
             .replace(/\*(.*?)\*/g, '$1')
             .trim();
 
+          const newHistory = [...history, { role: 'user', text: message }, { role: 'model', text: claudeReply }];
+          session.history = newHistory;
+
           if (orderMatch) {
             try {
               const order = JSON.parse(orderMatch[1]);
@@ -350,20 +362,20 @@ http.createServer((req, res) => {
                 '', `⏰ ${now} МСК`,
               ].join('\n');
               tgRequest('sendMessage', { chat_id: process.env.TG_CHAT_ID, text: tgText, parse_mode: 'HTML' });
+              sendChatHistory(sessionId, newHistory);
               orderPlaced = true;
             } catch {}
           }
 
-          session.history = [...history, { role: 'user', text: message }, { role: 'model', text: claudeReply }];
-          notifyChat(sessionId, message, cleanReply);
           return json({ ok: true, reply: cleanReply, source: 'claude', orderPlaced });
         }
         // Claude недоступен — передаём менеджеру
-        notifyChat(sessionId, message, null);
         if (session.managerEngaged) {
           return json({ ok: true, reply: null, source: 'bot', waitOwner: true });
         }
         session.managerEngaged = true;
+        notifyManagerNeeded(sessionId);
+        sendChatHistory(sessionId, [...(session.history || []), { role: 'user', text: message }]);
         json({
           ok: true,
           reply: 'Передаю вопрос менеджеру — ответит в течение нескольких минут. Также можно позвонить: 8 (950) 114-41-75',
