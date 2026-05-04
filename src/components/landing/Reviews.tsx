@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import productReviewImg from "@/assets/product-review.jpeg";
 
 const reviews = [
   {
@@ -44,15 +45,6 @@ const reviews = [
     initials: "МД",
     color: "bg-rose-100 text-rose-700",
     text: "Брала на пробу 10г — понравилось, что нет химии. Сейчас уже второй заказ на 30г. Стала высыпаться лучше и меньше болею в сезон простуд.",
-    rating: 5,
-  },
-  {
-    name: "Дмитрий Е.",
-    age: "51 год",
-    role: "Спорт и восстановление",
-    initials: "ДЕ",
-    color: "bg-teal-100 text-teal-700",
-    text: "Пью курсами уже год. Субъективно — меньше крепатуры после тренировок, сосуды чувствуют себя лучше. Анализы подтвердили улучшение липидного профиля.",
     rating: 5,
   },
 ];
@@ -108,6 +100,31 @@ export const Reviews = () => (
             </div>
           </article>
         ))}
+
+        {/* Фото-отзыв */}
+        <article className="flex flex-col overflow-hidden rounded-2xl border border-border bg-white transition-all hover:border-primary/30 hover:shadow-md">
+          <div className="relative h-56 w-full overflow-hidden">
+            <img
+              src={productReviewImg}
+              alt="Посылка АктивПлюс — баночки и упаковка"
+              className="h-full w-full object-cover object-top"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          </div>
+          <div className="flex flex-1 flex-col p-7">
+            <StarRow rating={5} />
+            <p className="mt-5 flex-1 leading-relaxed text-foreground/85">«Заказывала сразу три баночки — пришло всё аккуратно упаковано, с памяткой и мерной ложечкой. Приятно, что всё продумано до мелочей.»</p>
+            <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-pink-100 text-sm font-bold text-pink-700">
+                ОС
+              </div>
+              <div>
+                <div className="font-semibold">Ольга С., 47 лет</div>
+                <div className="text-sm text-muted-foreground">Постоянный покупатель</div>
+              </div>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   </section>
