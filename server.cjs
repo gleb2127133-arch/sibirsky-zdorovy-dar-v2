@@ -320,14 +320,6 @@ http.createServer((req, res) => {
 
       getSession(sessionId);
       const session = getSession(sessionId);
-      const faqAnswer = matchFaq(message);
-
-      if (faqAnswer) {
-        notifyChat(sessionId, message, faqAnswer);
-        return json({ ok: true, reply: faqAnswer, source: 'bot' });
-      }
-
-      // FAQ не знает — пробуем Claude
       const history = session.history || [];
       claudeChat(history, message, (err, claudeReply) => {
         if (claudeReply) {
