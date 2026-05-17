@@ -139,9 +139,9 @@ export default function BlogPost() {
             <div className="mt-10 rounded-2xl bg-primary/5 border border-primary/20 p-8 text-center">
               <h3 className="font-serif text-2xl">Хотите попробовать дигидрокверцетин?</h3>
               <p className="mt-2 text-muted-foreground">Чистота 96%+, производство Иркутская область. Доставка по всей России.</p>
-              <Link to="/#catalog" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow-md">
+              <a href="/#catalog" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:shadow-md">
                 Выбрать объём →
-              </Link>
+              </a>
             </div>
           </div>
         </section>
