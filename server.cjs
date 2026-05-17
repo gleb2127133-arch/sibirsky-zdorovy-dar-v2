@@ -387,6 +387,36 @@ http.createServer((req, res) => {
     return;
   }
 
+  // GET /api/blog — list of articles
+  if (req.method === 'GET' && req.url === '/api/blog') {
+    const blogDir = path.join(__dirname, 'blog');
+    if (!fs.existsSync(blogDir)) return json({ articles: [] });
+    try {
+      const files = fs.readdirSync(blogDir)
+        .filter(f => f.endsWith('.json'))
+        .sort((a, b) => b.localeCompare(a));
+      const articles = files.map(f => {
+        try {
+          const data = JSON.parse(fs.readFileSync(path.join(blogDir, f), 'utf8'));
+          const { content, ...meta } = data;
+          return meta;
+        } catch { return null; }
+      }).filter(Boolean);
+      return json({ articles });
+    } catch { return json({ articles: [] }); }
+  }
+
+  // GET /api/blog/:slug — single article
+  if (req.method === 'GET' && req.url.startsWith('/api/blog/')) {
+    const slug = req.url.replace('/api/blog/', '').split('?')[0];
+    const file = path.join(__dirname, 'blog', `${slug}.json`);
+    if (!fs.existsSync(file)) return json({ error: 'not found' }, 404);
+    try {
+      const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+      return json(data);
+    } catch { return json({ error: 'error' }, 500); }
+  }
+
   // GET /api/chat-poll?session=ID
   if (req.method === 'GET' && req.url.startsWith('/api/chat-poll')) {
     const sid = new URL(req.url, 'http://x').searchParams.get('session');

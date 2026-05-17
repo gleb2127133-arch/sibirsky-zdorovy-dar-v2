@@ -8,6 +8,7 @@ const links = [
   { href: "#science", label: "Наука" },
   { href: "#catalog", label: "Каталог" },
   { href: "#faq", label: "FAQ" },
+  { href: "/blog", label: "Блог" },
 ];
 
 export const Header = () => {
