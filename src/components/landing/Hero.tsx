@@ -42,15 +42,15 @@ export const Hero = () => {
             variants={item}
             className="mt-6 font-serif text-4xl font-normal leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl"
           >
-            Чистый дигидрокверцетин{" "}
-            <span className="text-primary">без добавок</span>
+            Дигидрокверцетин 96%+{" "}
+            <span className="text-primary">из сибирской лиственницы</span>
           </motion.h1>
 
           <motion.p
             variants={item}
             className="mt-6 max-w-lg text-base leading-relaxed text-muted-foreground sm:text-lg"
           >
-            Антиоксидант из лиственницы в порошковой форме с возможностью индивидуальной дозировки
+            Чистый порошок таксифолина без добавок и капсул — с возможностью точной индивидуальной дозировки
           </motion.p>
 
           <motion.div
@@ -97,7 +97,7 @@ export const Hero = () => {
           <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-3xl border border-border bg-white shadow-lg">
             <img
               src={jarImg}
-              alt="Дигидрокверцетин — премиум баночка"
+              alt="Дигидрокверцетин АктивПлюс — порошок в банке 10г, 20г, 30г"
               width={1280}
               height={1280}
               className="h-full w-full object-cover"

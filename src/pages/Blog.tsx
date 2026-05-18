@@ -28,11 +28,24 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = "Блог о дигидрокверцетине — АктивПлюс";
+    document.title = "Блог о дигидрокверцетине — наука и практика | АктивПлюс";
+    const desc = document.querySelector('meta[name="description"]');
+    if (desc) desc.setAttribute("content", "Экспертные статьи о дигидрокверцетине (ДГК): научные исследования, применение в спорте, влияние на здоровье и иммунитет.");
+    const og = document.querySelector('meta[property="og:title"]');
+    if (og) og.setAttribute("content", "Блог о дигидрокверцетине — наука и практика | АктивПлюс");
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute("href", "https://activepluse.ru/blog");
+
     fetch("/api/blog")
       .then(r => r.json())
       .then(d => { setArticles(d.articles || []); setLoading(false); })
       .catch(() => setLoading(false));
+
+    return () => {
+      document.title = "Дигидрокверцетин — натуральный антиоксидант 96%+ | АктивПлюс";
+      if (desc) desc.setAttribute("content", "Чистый дигидрокверцетин из сибирской лиственницы, чистота 96%+. Укрепляет сосуды, иммунитет, снижает холестерин. От 2 590 ₽. Доставка по России.");
+      if (canonical) canonical.setAttribute("href", "https://activepluse.ru/");
+    };
   }, []);
 
   return (

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Phone, MessageCircle } from "lucide-react";
 
@@ -28,7 +29,28 @@ const faqs = [
   },
 ];
 
-export const FAQ = () => (
+export const FAQ = () => {
+  useEffect(() => {
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map(f => ({
+        "@type": "Question",
+        "name": f.q,
+        "acceptedAnswer": { "@type": "Answer", "text": f.a },
+      })),
+    };
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "faq-schema";
+    script.textContent = JSON.stringify(schema);
+    if (!document.getElementById("faq-schema")) {
+      document.head.appendChild(script);
+    }
+    return () => { document.getElementById("faq-schema")?.remove(); };
+  }, []);
+
+  return (
   <section id="faq" className="bg-white py-20 lg:py-28">
     <div className="container-narrow grid gap-12 lg:grid-cols-[1fr_1.6fr]">
       <div>
@@ -68,4 +90,5 @@ export const FAQ = () => (
       </Accordion>
     </div>
   </section>
-);
+  );
+};

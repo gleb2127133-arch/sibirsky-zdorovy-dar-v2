@@ -387,6 +387,43 @@ http.createServer((req, res) => {
     return;
   }
 
+  // GET /sitemap.xml — dynamic sitemap
+  if (req.method === 'GET' && req.url === '/sitemap.xml') {
+    const blogDir = path.join(__dirname, 'blog');
+    const blogUrls = [];
+    if (fs.existsSync(blogDir)) {
+      const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.json')).sort((a, b) => b.localeCompare(a));
+      for (const f of files) {
+        try {
+          const data = JSON.parse(fs.readFileSync(path.join(blogDir, f), 'utf8'));
+          if (data.slug && data.date) {
+            blogUrls.push(`  <url>\n    <loc>https://activepluse.ru/blog/${data.slug}</loc>\n    <lastmod>${data.date}</lastmod>\n    <changefreq>monthly</changefreq>\n    <priority>0.7</priority>\n  </url>`);
+          }
+        } catch {}
+      }
+    }
+    const today = new Date().toISOString().split('T')[0];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://activepluse.ru/</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://activepluse.ru/blog</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+${blogUrls.join('\n')}
+</urlset>`;
+    res.writeHead(200, { 'Content-Type': 'application/xml; charset=utf-8' });
+    res.end(xml);
+    return;
+  }
+
   // GET /api/blog — list of articles
   if (req.method === 'GET' && req.url === '/api/blog') {
     const blogDir = path.join(__dirname, 'blog');

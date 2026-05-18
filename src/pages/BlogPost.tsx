@@ -41,11 +41,69 @@ export default function BlogPost() {
   }, [slug]);
 
   useEffect(() => {
-    if (article) {
-      document.title = `${article.title} — АктивПлюс`;
-      const desc = document.querySelector('meta[name="description"]');
-      if (desc) desc.setAttribute("content", article.description);
+    if (!article) return;
+
+    // Title & description
+    document.title = `${article.title} — АктивПлюс`;
+    const setMeta = (sel: string, val: string) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute("content", val);
+    };
+    setMeta('meta[name="description"]', article.description);
+    setMeta('meta[property="og:title"]', `${article.title} — АктивПлюс`);
+    setMeta('meta[property="og:description"]', article.description);
+    setMeta('meta[property="og:url"]', `https://activepluse.ru/blog/${article.slug}`);
+    setMeta('meta[name="twitter:title"]', `${article.title} — АктивПлюс`);
+    setMeta('meta[name="twitter:description"]', article.description);
+
+    // Canonical
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.setAttribute("rel", "canonical");
+      document.head.appendChild(canonical);
     }
+    canonical.setAttribute("href", `https://activepluse.ru/blog/${article.slug}`);
+
+    // Article + BreadcrumbList schema
+    const schema = [
+      {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": article.title,
+        "description": article.description,
+        "datePublished": article.date,
+        "author": { "@type": "Organization", "name": "АктивПлюс" },
+        "publisher": {
+          "@type": "Organization",
+          "name": "АктивПлюс",
+          "logo": { "@type": "ImageObject", "url": "https://activepluse.ru/logo.png" }
+        },
+        "mainEntityOfPage": `https://activepluse.ru/blog/${article.slug}`,
+        "keywords": article.keywords?.join(", "),
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://activepluse.ru" },
+          { "@type": "ListItem", "position": 2, "name": "Блог", "item": "https://activepluse.ru/blog" },
+          { "@type": "ListItem", "position": 3, "name": article.title, "item": `https://activepluse.ru/blog/${article.slug}` },
+        ],
+      },
+    ];
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
+    script.id = "article-schema";
+    script.textContent = JSON.stringify(schema);
+    document.getElementById("article-schema")?.remove();
+    document.head.appendChild(script);
+
+    return () => {
+      document.getElementById("article-schema")?.remove();
+      document.title = "Дигидрокверцетин — натуральный антиоксидант 96%+ | АктивПлюс";
+      canonical?.setAttribute("href", "https://activepluse.ru/");
+    };
   }, [article]);
 
   if (loading) return (
