@@ -1,31 +1,41 @@
 import { Menu, X, Phone, MessageCircle } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 
-const links = [
-  { href: "#about", label: "О продукте" },
-  { href: "#effects", label: "Эффекты" },
-  { href: "#science", label: "Наука" },
-  { href: "#catalog", label: "Каталог" },
-  { href: "#faq", label: "FAQ" },
-  { href: "/blog", label: "Блог" },
+const NAV_LINKS = [
+  { anchor: "#about",   label: "О продукте" },
+  { anchor: "#effects", label: "Эффекты" },
+  { anchor: "#science", label: "Наука" },
+  { anchor: "#catalog", label: "Каталог" },
+  { anchor: "#faq",     label: "FAQ" },
+  { anchor: "/blog",    label: "Блог" },
 ];
 
 export const Header = () => {
   const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
+
+  // На главной — якорные ссылки (#catalog), на других страницах — полные (/#catalog)
+  const href = (anchor: string) => {
+    if (anchor.startsWith("/")) return anchor;          // /blog — всегда полный путь
+    return isHome ? anchor : `/${anchor}`;              // #catalog → /#catalog вне главной
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-white/90 backdrop-blur-md">
       <div className="container-narrow flex h-16 items-center justify-between">
-        <a href="#top" className="flex items-center gap-2 text-lg font-bold text-foreground">
+        <a href="/" className="flex items-center gap-2 text-lg font-bold text-foreground">
           <img src={logoImg} alt="АктивПлюс" className="h-10 w-10 object-contain" />
           <span className="font-serif">АктивПлюс</span>
         </a>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => (
+          {NAV_LINKS.map((l) => (
             <a
-              key={l.href}
-              href={l.href}
+              key={l.anchor}
+              href={href(l.anchor)}
               className="rounded-md px-3 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-primary"
             >
               {l.label}
@@ -51,7 +61,7 @@ export const Header = () => {
             8 (950) 114-41-75
           </a>
         </div>
-        <a href="#order" className="btn-primary hidden md:inline-flex">
+        <a href={href("#order")} className="btn-primary hidden md:inline-flex">
           Заказать
         </a>
 
@@ -67,17 +77,17 @@ export const Header = () => {
       {open && (
         <div className="border-t border-border bg-white md:hidden">
           <div className="container-narrow flex flex-col gap-1 py-3">
-            {links.map((l) => (
+            {NAV_LINKS.map((l) => (
               <a
-                key={l.href}
-                href={l.href}
+                key={l.anchor}
+                href={href(l.anchor)}
                 onClick={() => setOpen(false)}
                 className="rounded-md px-3 py-2.5 text-sm font-medium text-foreground/80 hover:bg-muted"
               >
                 {l.label}
               </a>
             ))}
-            <a href="#order" onClick={() => setOpen(false)} className="btn-primary mt-2">
+            <a href={href("#order")} onClick={() => setOpen(false)} className="btn-primary mt-2">
               Заказать
             </a>
           </div>
