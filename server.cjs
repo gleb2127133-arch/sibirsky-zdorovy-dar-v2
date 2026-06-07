@@ -387,6 +387,47 @@ http.createServer((req, res) => {
     return;
   }
 
+  // GET /rss.xml — RSS feed for blog articles
+  if (req.method === 'GET' && req.url === '/rss.xml') {
+    const blogDir = path.join(__dirname, 'blog');
+    const items = [];
+    if (fs.existsSync(blogDir)) {
+      const files = fs.readdirSync(blogDir).filter(f => f.endsWith('.json')).sort((a, b) => b.localeCompare(a)).slice(0, 20);
+      for (const f of files) {
+        try {
+          const data = JSON.parse(fs.readFileSync(path.join(blogDir, f), 'utf8'));
+          if (data.slug && data.title) {
+            const pubDate = new Date(data.date).toUTCString();
+            const desc = (data.description || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            const title = (data.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            items.push(`  <item>
+    <title>${title}</title>
+    <link>https://activepluse.ru/blog/${data.slug}</link>
+    <guid>https://activepluse.ru/blog/${data.slug}</guid>
+    <pubDate>${pubDate}</pubDate>
+    <description>${desc}</description>
+    <category>${data.categoryLabel || ''}</category>
+  </item>`);
+          }
+        } catch {}
+      }
+    }
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>АктивПлюс — блог о дигидрокверцетине</title>
+    <link>https://activepluse.ru</link>
+    <description>Экспертные статьи о дигидрокверцетине: наука, спорт, здоровье и профилактика</description>
+    <language>ru</language>
+    <atom:link href="https://activepluse.ru/rss.xml" rel="self" type="application/rss+xml"/>
+${items.join('\n')}
+  </channel>
+</rss>`;
+    res.writeHead(200, { 'Content-Type': 'application/rss+xml; charset=utf-8' });
+    res.end(xml);
+    return;
+  }
+
   // GET /sitemap.xml — dynamic sitemap
   if (req.method === 'GET' && req.url === '/sitemap.xml') {
     const blogDir = path.join(__dirname, 'blog');
